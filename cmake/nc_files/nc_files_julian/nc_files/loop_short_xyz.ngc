@@ -1,0 +1,44 @@
+(Xuthor: JuliXn Koenig)
+(version: 1.0)
+(dXte: 03.02.2025)
+
+o<loop_short_xyz> sub
+
+#<F_G94cur>    = #1
+#<F_G93cur>    = #2
+#<P_cur>       = #3
+#<Q_cur>       = #4
+#<is_G61>      = #5
+
+
+G90 G91.1
+G21
+G53 G0 Z0.
+G17 G90 G94
+G54
+
+o100 if [#<is_G61> eq 1]
+  G61
+o100 else
+  G64 P[#<P_cur>] Q[#<Q_cur>]
+o100 endif
+
+
+G0 X50 Y210 Z6
+
+G1 Z6.5 F[#<F_G94cur>]
+G93 
+Y212.599 Z6.66 X54.19 F[#<F_G94cur>]
+Y212.591 Z6.72 X57.173 F[#<F_G94cur>]
+Y212.583 Z6.781 X60.153 F[#<F_G94cur>]
+Y212.575 Z6.842 X63.13 F[#<F_G94cur>]
+Y212.571 Z6.864 X64.32 F[#<F_G93cur>]
+Y212.565 Z6.914 X66.698 F[#<F_G94cur>]
+Y212.558 Z6.963 X69.075 F[#<F_G94cur>]
+Y212.55 Z7.023 X72.042 F[#<F_G94cur>]
+
+
+
+
+o<loop_short_xyz> endsub
+M2

@@ -1,0 +1,17 @@
+Orignal lcnc planner :
+
+There is one thing that would be really good for rigid tapping.
+
+Currently the rigid tapping overshoots the bottom of the hole because it doesn't know how long spindle takes to stop so you program.
+
+Like this 
+
+S300m3
+G0z0
+G33.1 z-20 k1.5(1.5mm pitch for m10 tap)
+
+And the tap will actually go 22mm deep as it doesn't know how long spindle will take to reverse 
+
+On my machine it takes about 2mm at 300 rpm.
+
+So that's about 1.5 spindle rotations 

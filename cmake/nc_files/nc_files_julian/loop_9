@@ -1,0 +1,15 @@
+#!/bin/bash
+
+CONFIG="../cmake/nc_files/nc_files_julian/machine_data/loop_9.ini"
+cd ..
+cd ..
+cd ..
+cd scripts
+. ./rip-environment
+linuxcnc $CONFIG
+
+
+
+
+
+

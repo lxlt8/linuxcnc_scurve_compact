@@ -1,0 +1,13 @@
+#!/bin/bash
+
+CONFIG="../cmake/configs/axis_3_orig/axis_mm.ini"
+cd ..
+cd ..
+cd scripts
+. ./rip-environment
+linuxcnc $CONFIG
+
+
+
+
+

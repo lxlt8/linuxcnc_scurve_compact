@@ -1,0 +1,247 @@
+# LinuxCNC S-Curve Trajectory Planner
+
+![Language](https://img.shields.io/badge/language-C_CPP-blue)
+
+This repository contains a compact implementation of the S-curve trajectory planner for LinuxCNC, derived from the original source code available at [LinuxCNC GitHub](https://github.com/LinuxCNC/linuxcnc). The primary goal of this project is to provide a smooth and efficient motion planning algorithm for CNC machines using S-curve profiles.
+
+---
+
+<div align="center">
+  <img src="https://codeberg.org/skynet/linuxcnc_scurve_compact/raw/branch/master/cmake/libplanner/pics/linuxcnc_preview.png" alt="LinuxCNC Preview" width="50%">
+</div>
+
+---
+
+## Table of Contents
+
+- [Important Runtime Notes](#important-runtime-notes)
+- [HAL Pins & Parameters](#hal-pins--parameters)
+- [Features](#features)
+- [Dependencies](#dependencies)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Path Blending](#path-blending)
+- [License](#license)
+- [Author](#author)
+- [Supporting the Project](#supporting-the-project)
+
+---
+
+## Important Runtime Notes
+
+When using the S-curve trajectory planner, always use the `G64 P[x] Q[x]` command combination. If `Q[x]` is not specified, the interpreter may:
+
+1. Remove or filter out small segments.
+2. Convert arc segments into line segments.
+
+A standard input should look like this:
+
+```bash
+G64 P0.01 Q0.0
+```
+
+---
+
+## HAL Pins & Parameters
+
+### `float_data_t`
+- `hal_tp_curvel`: Current velocity of motion (mm/s, displayed as mm/min in GUI).
+- `hal_tp_curacc`: Current acceleration of motion (mm/s²).
+- `hal_tp_curpos`: Current position (mm).
+- `hal_tp_tarpos`: Target position (mm).
+- `hal_index_length`: Current active segment length.
+- `hal_index_progress`: Current active segment progress (0-1).
+- `hal_rapid_override`: Current rapid override (%) for G0 moves.
+- `hal_feed_override`: Current feed override (%) for G1, G2, G3 moves.
+- `hal_max_vel`: Current maximum velocity.
+- `hal_trajectory_end`: Trajectory end position.
+- `hal_scurve_cycle_dist`: Distance traveled by the S-curve in a servo cycle.
+- `hal_traject_buffer_dist`: Distance buffered into the future.
+- `hal_segment_vm`: Current segment maximum velocity.
+- `hal_segment_ve`: Current segment beginning velocity.
+
+### `s32_data_t`
+- `hal_ring_buffer_index`: Current active segment number (0-Buffer size).
+- `hal_global_buffer_index`: Current global segment number.
+- `hal_index_size`: Number of segments stored in the program.
+- `hal_push_counter`: Current segment number from program start.
+- `hal_index_return_code`: S-curve return code (0=ok, 1=error, 2=finished, 3=busy).
+- `hal_index_motion_type`: Current motion type (1=rapid, 2=linear, 3=arc, 4=tool_change, 5=rigid_tap, 10=spline fillet).
+- `hal_tap_synchronized_motion`: Indicates if spindle and Z-axis are synchronized for tapping.
+- `hal_cycle`: Active monitoring.
+- `hal_future_buffer`: Number of segments buffered in the future.
+- `hal_motion_increments_a_cycle`: Number of motions incremented per servo cycle.
+- `hal_buffer_overflow`: Indicates buffer overflow (velocity set too high).
+- `hal_use_real_deviation`: Use clothoid deviation fit method or fast trim deviation method.
+
+### `param_float_data_t`
+- `hal_max_jerk`: S-curve maximum jerk (edit when motion is not active).
+- `hal_smooth_filter`: (Not used) Filters position updates to reduce acceleration spikes.
+
+---
+
+## Features
+
+- Support for XYZ, ABC, and UVW axes.
+- S-curve motion profile for smooth acceleration and deceleration.
+- Clothoid 3D deviation for precise motion planning.
+- Look-ahead functionality for efficient path planning.
+- Jog x,y,z keyboard button press in pause state. Resumes first xy axis, then z axis. 
+  Needs tpmod.hal_enable_keyboard_jog pin to be set to : 1
+- Jog x,y,z in pause state using hal pins :
+```bash
+    tpmod.hal_jog_[axis_id]_min  
+    tpmod.hal_jog_[axis_id]_plus  
+```
+- Outputs segment radius & segment types at runtime. Usefull for plasma machines to 
+  optimize speed at runtime.
+
+## Todo
+
+- Tangential knife rotation output to hal float pin. Unit [Degrees].
+
+---
+
+## Dependencies
+
+To build and run this project, you need the following dependencies:
+
+```bash
+sudo apt-get install libceres-dev
+```
+
+Additionally, the following libraries are required:
+
+- [S-curve](https://codeberg.org/skynet/scurve)
+- [Clothoid3D](https://codeberg.org/skynet/clothoid_3d)
+
+---
+
+## Installation
+
+### Clone the Repository
+
+```bash
+git clone --recurse-submodules https://codeberg.org/skynet/linuxcnc_scurve_compact
+```
+
+### Patch an Existing LinuxCNC Installation
+
+To patch a fresh LinuxCNC clone with the new S-curve trajectory planner:
+
+1. Copy the `cmake` directory and its contents into your LinuxCNC source directory (`~/linuxcnc/`).
+2. Run the patch script:
+
+   ```bash
+   ./patch
+   ```
+3. Run the installer script:
+
+   ```bash
+   ./installer
+   ```
+4. If the installer script fails to compile
+   check the PATCH.md file.
+
+---
+
+## Configuration
+
+### Environment Setup and Build
+
+1. **Automated Installation**:
+
+   ```bash
+   cd cmake
+   ./installer
+   ```
+
+2. **Manual Installation**:
+
+   - Install dependencies:
+
+     ```bash
+     ./deps_lcnc
+     ```
+
+   - Build LinuxCNC:
+
+     ```bash
+     ./build_lcnc
+     ```
+
+   - Compile the new planner (`tpmod_scurve.so`):
+
+     ```bash
+     ./build_cmake
+     ```
+
+3. **Run LinuxCNC with S-curve Motion Profile**:
+
+   ```bash
+   cd cmake/configs
+   ./run_axis_9
+   ```
+
+### Required `.ini` File Settings
+
+Add the following settings under the `[TRAJ]` section in your `.ini` file:
+
+```bash
+[TRAJ]
+# Used trajectory planner:
+TPMOD=tpmod_scurve
+# Used trajectory values:
+DEFAULT_LINEAR_VELOCITY = 30.48
+MAX_LINEAR_VELOCITY = 53.34
+DEFAULT_LINEAR_ACCELERATION = 508
+MAX_LINEAR_ACCELERATION = 508
+```
+
+---
+
+## Path Blending
+
+When using `G64 P[x] Q[x]`, the planner enables path blending and uses end velocities to achieve smooth motion. Always use `Q0.0` to prevent filtering out tiny segments:
+
+```bash
+G64 P0.1 Q0.0
+```
+
+Optionally, use `Q[x]` to filter out tiny segments:
+
+```bash
+G64 P0.1 Q0.1
+```
+
+---
+
+## License
+
+This project is open-source and available under the **GPL2 License**.
+
+---
+
+## Author
+
+**Michel Wijnja** (alias Grotius, Skynet)  
+Copyright (c) 2024. All rights reserved.
+
+---
+
+## Author Contact
+
+For inquiries, please contact:  
+📧 [michelwijnja@gmail.com](mailto:michelwijnja@gmail.com)
+
+---
+
+## Supporting the Project
+
+Developing and maintaining this codebase requires significant time, effort, and dedication. If you find this project useful, please consider making a donation to the following non-profit organization that helps donkeys. Your contribution will support both this project and a meaningful cause.
+
+<a href="https://www.oscarsplace.org/welcome" target="_blank">
+  <img src="https://img.shields.io/badge/Donate-Now-blue" alt="Donate Now">
+</a>
+
+---

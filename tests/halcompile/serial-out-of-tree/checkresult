@@ -1,0 +1,2 @@
+#!/bin/sh
+[ -e "$(dirname "$1")/mesa_uart_test.so" ] || [ -e "$(dirname "$1")/mesa_uart_test.ko" ]

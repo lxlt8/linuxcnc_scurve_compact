@@ -1,0 +1,1 @@
+/usr/bin/cc -fPIC -shared -Wl,-soname,backlash.so -o backlash.so CMakeFiles/backlash.dir/backlash.c.o CMakeFiles/backlash.dir/scurve.c.o  -Wl,-rpath,/home/user/linuxcnc_distro_files/linuxcnc/cmake/libbacklash/../../lib /home/user/linuxcnc_distro_files/linuxcnc/cmake/libbacklash/../../lib/liblinuxcnchal.so -ltcl8.6 -ltk8.6 -lX11 -lm -ltirpc -pthread

@@ -1,0 +1,42 @@
+(author: Julian Koenig)
+(version: 1.0)
+(date: 03.02.2025)
+
+
+o<loop_abc> sub
+
+#<F_G94cur>    = #1
+#<F_G93cur>    = #2
+#<P_cur>       = #3
+#<Q_cur>       = #4
+#<is_G61>      = #5
+
+
+G94
+G21                 
+G90       
+
+o100 if [#<is_G61> eq 1]
+  G61
+o100 else            
+  G64 P[#<P_cur>] Q[#<Q_cur>]
+o100 endif
+
+
+F[#<F_G94cur>]
+
+
+G0 X0 Y0 Z0 
+G0 A0
+G0 B0
+G0 A45
+G0 A0
+G0 B45
+G0 B0
+G1 X0 Y0 Z0 A0 F[#<F_G94cur>]
+G1 X100 Y0 Z0 A45 F[#<F_G94cur>]
+G1 Y100 A0 F[#<F_G94cur>]
+G1 X0 F[#<F_G94cur>] 
+
+o<loop_abc> endsub
+M2

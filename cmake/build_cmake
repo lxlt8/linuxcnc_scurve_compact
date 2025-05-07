@@ -1,0 +1,131 @@
+#!/bin/bash
+
+# Determine if a Release build and set cmake builder line accordingly
+BUILDER="cmake -DCMAKE_BUILD_TYPE=Release .."
+DEBUG=0
+
+
+while getopts 'dq' opt; do
+  case "$opt" in
+    d)
+		echo ">>>>> DEBUG Build Option selected'"
+		BUILDER="cmake -DCMAKE_BUILD_TYPE=Debug .."
+		DEBUG=1
+		;;
+	q)
+		echo ">>>>> QT Debug Build Option selected'"
+		BUILDER="cmake -DQT_DEBUG:BOOL=On -DCMAKE_BUILD_TYPE=Debug .."
+		DEBUG=2
+		;;
+
+	*)
+		echo "Usage: valid options are -d for DEBUG, -q for QT DEBUG or nothing for RELEASE"
+		exit 1
+  esac
+done
+
+if (( $DEBUG == 0 )); then
+		echo ">>>>> DEFAULT RELEASE Build Option selected'"
+fi
+
+# We need both recompile liblinuxcnchal & motmod to be able to run the scurve trajecotry planner.
+
+# Dependencies libclothoid3d:
+sudo apt-get install libeigen3-dev libceres-dev
+
+# Prevent ceres includes eigen3 missing warning:
+sudo ln -s /usr/include/eigen3/Eigen /usr/include/Eigen
+
+# Linuxcnchal "liblinuxcnchal.so"
+echo "+---------------------------------------------------------------+"
+echo "|                     liblinuxcnchal                            |"
+echo "+---------------------------------------------------------------+"
+cd liblinuxcnchal
+mkdir -p build
+cd build
+# flush build dir
+# rm -rf *
+eval $BUILDER
+make -j`nproc`
+sudo make install
+cd ../..
+
+# Motion component "motmod.so"
+echo "+---------------------------------------------------------------+"
+echo "|                     custom motmod.so                          |"
+echo "+---------------------------------------------------------------+"
+cd libmotion
+mkdir -p build
+cd build
+# flush build dir
+# rm -rf *
+eval $BUILDER
+make -j`nproc`
+sudo make install
+cd ../..
+
+# Motion component "homemod.so"
+echo "+---------------------------------------------------------------+"
+echo "|                     custom homemod.so                          |"
+echo "+---------------------------------------------------------------+"
+cd libhome
+mkdir -p build
+cd build
+# flush build dir
+# rm -rf *
+eval $BUILDER
+make -j`nproc`
+sudo make install
+cd ../..
+
+# Motion planner realtime component "libclothoid3d.so"
+echo "+---------------------------------------------------------------+"
+echo "|                     libclothoid3d.so                          |"
+echo "+---------------------------------------------------------------+"
+cd libclothoid3d/src
+mkdir -p build
+cd build
+# flush build dir
+# rm -rf *
+eval $BUILDER
+make -j`nproc`
+sudo make install
+cd ../../..
+
+# Motion planner scurve component "libscurve.so"
+#echo "+---------------------------------------------------------------+"
+#echo "|                     libscurve.so                          |"
+#echo "+---------------------------------------------------------------+"
+#cd libscurve/src
+#mkdir -p build
+#cd build
+# flush build dir
+# rm -rf *
+#eval $BUILDER
+#make -j`nproc`
+#sudo make install
+#cd ../../..
+
+# Motion planner realtime component "tpmod_scurve.so"
+echo "+---------------------------------------------------------------+"
+echo "|                     custom tpmod_scurve.so                    |"
+echo "+---------------------------------------------------------------+"
+cd libplanner
+mkdir -p build
+cd build
+# flush build dir
+# rm -rf *
+eval $BUILDER
+make -j`nproc`
+sudo make install
+cd ../..
+
+#echo "+---------------------------------------------------------------+"
+#echo "|                     ldconfig libs                             |"
+#echo "+---------------------------------------------------------------+"
+#sudo ldconfig $(pwd)/../lib
+#sudo ldconfig $(pwd)/../rtlib
+
+
+
+

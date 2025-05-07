@@ -1,0 +1,16 @@
+#!/usr/bin/bash
+
+cd ../../scripts/ && . ./rip-environment
+
+cd ../bin
+
+halcmd stop
+halcmd loadrt threads name1=base-thread fp1=0 period1=25000 name2=servo-thread period2=1000000
+halcmd loadrt backlash
+halcmd addf backlash_update servo-thread
+halcmd start
+
+halcmd show
+
+# To clean the hal environment :
+# ~/linuxcnc/scripts/halrun -U

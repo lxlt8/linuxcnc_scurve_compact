@@ -1,0 +1,43 @@
+# Halshow settings
+# This file is generated automatically.
+wm geometry . 700x621+-19+147
+placeFrames 0.3
+set ::ratio 0.3
+set ::old_w_leftf 160
+set ::watchlist {
+    param+tpmod.hal_blend_speed
+    param+tpmod.hal_blend_type
+    param+tpmod.hal_g0_transition_blend
+    param+tpmod.hal_look_ahead_lines
+    param+tpmod.hal_max_jerk
+    pin+tpmod.hal_index_current
+    pin+tpmod.hal_index_length
+    pin+tpmod.hal_index_moton_type
+    pin+tpmod.hal_index_progress
+    pin+tpmod.hal_index_return_code
+    pin+tpmod.hal_index_size
+    pin+tpmod.hal_tap_synchronized_motion
+    pin+tpmod.hal_tp_curacc
+    pin+tpmod.hal_tp_curpos
+    pin+tpmod.hal_tp_curvel
+    pin+pyvcp.loop_jerk_max
+    pin+pyvcp.loop_jerk_min
+    pin+ini.0.backlash
+    pin+ini.1.backlash
+    pin+ini.2.backlash
+    pin+ini.3.backlash
+    pin+motion.adaptive-feed
+    pin+tpmod.hal_tp_tarpos
+    pin+motion.motion-type
+    pin+motion.motion-enabled
+    pin+halui.mode.auto
+    pin+halui.mode.is-auto
+    pin+halui.mode.is-manual
+}
+set ::workmode watchhal
+set ::watchInterval 100
+set ::col1_width 100
+set ::ffmts 
+set ::ifmts 
+set ::alwaysOnTop 0
+set ::autoSaveWatchlist 1

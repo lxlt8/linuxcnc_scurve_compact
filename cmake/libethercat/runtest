@@ -1,0 +1,17 @@
+#!/usr/bin/bash
+
+cd ../../scripts/ && ./halrun -U && . ./rip-environment
+
+cd ../bin
+
+halcmd stop
+halcmd loadrt threads name1=base-thread fp1=0 period1=1000000 name2=servo-thread period2=1000000
+halcmd loadrt ecat
+halcmd addf ecat_update servo-thread
+halcmd start
+
+halcmd show
+halcmd loadusr halshow
+
+# To clean the hal environment :
+# ~/linuxcnc/scripts/halrun -U

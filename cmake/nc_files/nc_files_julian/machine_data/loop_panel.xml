@@ -1,0 +1,117 @@
+<!-- loop_panel.xml -->
+<!-- Author: Julian Koenig -->
+<!-- Version: 1.0 -->
+<!-- Last Edited: 01.02.2025 -->
+
+
+
+<pyvcp>
+    <tabs>
+        <names>["Loop Test"]</names>
+        <!-- Beginning of loop tab -->
+        <vbox>
+
+            <label font="('', 13)" text=" " />
+            
+            
+            <hbox>
+                <label text="F (G94)" width="11" />
+                <spinbox width="10" min_="0" max_="100000" initval="10000" param_pin="1" format="2.3f" halpin="loop_f_g94min" />
+                <spinbox width="10" min_="0" max_="100000" initval="10000" param_pin="1" format="2.3f" halpin="loop_f_g94max" />
+            </hbox>
+            <hbox>
+                <label text="F (G93)" width="11" />
+                <spinbox width="10" min_="0" max_="100000" initval="10000" param_pin="1" format="2.3f" halpin="loop_f_g93min" />
+                <spinbox width="10" min_="0" max_="100000" initval="10000" param_pin="1" format="2.3f" halpin="loop_f_g93max" />
+            </hbox>
+           
+            <label font="('', 2)" text=" " />
+           
+            <hbox>
+                <label text="G64 P" width="11" />
+                <spinbox width="10" min_="0" max_="10" initval="0" param_pin="1" format="2.3f" halpin="loop_p_min" />
+                <spinbox width="10" min_="0" max_="10" initval="0" param_pin="1" format="2.3f" halpin="loop_p_max" />
+            </hbox>            
+            <hbox>
+                <label text="G64 Q" width="11" />
+                <spinbox width="10" min_="0" max_="10" initval="0" param_pin="1" format="2.3f" halpin="loop_q_min" />
+                <spinbox width="10" min_="0" max_="10" initval="0" param_pin="1" format="2.3f" halpin="loop_q_max" />
+            </hbox>
+
+            <hbox>
+                <checkbutton text="Use G61 insted?" halpin="loop_g61" initval="0" />
+            </hbox>
+            <label font="('', 1)" text=" " />
+            
+            <hbox>
+                <label text="Backlash" width="11" />
+                <spinbox width="10" min_="0" max_="1.0" initval="0" param_pin="1" format="2.3f" halpin="loop_backlash_min" />
+                <spinbox width="10" min_="0" max_="1.0" initval="0" param_pin="1" format="2.3f" halpin="loop_backlash_max" />
+            </hbox>
+            
+              <label font="('', 2)" text=" " />
+            
+            <hbox>
+                <label text="max jerk" width="11" />
+                <spinbox width="10" min_="100" max_="1000000000" initval="500" param_pin="1" format="2.0f" halpin="loop_jerk_min" />
+                <spinbox width="10" min_="100" max_="1000000000" initval="500" param_pin="1" format="2.0f" halpin="loop_jerk_max" />
+            </hbox>          
+            <hbox>
+                <label text="lookahead" width="11" />
+                <spinbox width="10" min_="1" max_="1000" initval="20" param_pin="1" format="2.0f" halpin="loop_look_min" />
+                <spinbox width="10" min_="1" max_="1000" initval="20" param_pin="1" format="2.0f" halpin="loop_look_max" />
+            </hbox>   
+
+           
+            <label text="Press Enter to apply new Values!" width="24" pady="6" />
+            <label font="('', 10)" text=" " />
+
+
+            <label text="Which codes do you want to test?" width="24" pady="6" />
+            <hbox>
+                <checkbutton text="short xyz Guido" halpin="loop_nc1" initval="1" />
+            </hbox>
+            <hbox>
+                <checkbutton text="square 100x100" halpin="loop_nc2" initval="0" />
+            </hbox>
+            <hbox>
+                <checkbutton text="abc fillet" halpin="loop_nc3" initval="0" />
+            </hbox>
+            <hbox>
+                <checkbutton text="Axis" halpin="loop_nc4" initval="0" />
+            </hbox>
+            <hbox>
+                <checkbutton text="long xyza Guido" halpin="loop_nc5" initval="0" />
+            </hbox>
+            <hbox>
+                <checkbutton text="small adaptive arcs" halpin="loop_nc6" initval="0" />
+            </hbox>
+            <hbox>
+                <checkbutton text="big arcs" halpin="loop_nc7" initval="0" />
+            </hbox>
+            <hbox>
+                <checkbutton text="square 50x50" halpin="loop_nc8" initval="0" />
+            </hbox>
+            <hbox>
+                <checkbutton text="short xyza Guido" halpin="loop_nc9" initval="0" />
+            </hbox>
+            
+            <label font="('', 1)" text=" " />
+            
+            
+            
+            <hbox>
+                <label text="How many loops?" width="24" />
+                <spinbox width="10" min_="1" max_="1000000000" initval="1000" param_pin="1" format="2.0f" halpin="loop_loop_count" />
+            </hbox>          
+            
+            
+            <label font="('', 13)" text=" " />
+
+        </vbox>
+        <!-- End of loop tab -->
+    </tabs>
+</pyvcp>
+
+
+

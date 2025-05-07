@@ -1,0 +1,32 @@
+#!/bin/bash
+
+echo "Installing linuxcnc"
+
+cd ..
+cd src
+
+# Run autogen
+./autogen.sh
+
+# Check Python version
+PYTHON_BIN=$(which python3)
+PYTHON_VERSION=$($PYTHON_BIN -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+
+echo "Detected Python version: $PYTHON_VERSION"
+
+# Compare version numbers
+if [[ $(echo "$PYTHON_VERSION >= 3.13" | bc -l) -eq 1 ]]; then
+    echo "Using Python 3.13+ at $PYTHON_BIN"
+    ./configure --enable-non-distributable=yes --with-realtime=uspace PYTHON=$PYTHON_BIN
+else
+    echo "Using system default Python"
+    ./configure --enable-non-distributable=yes --with-realtime=uspace
+fi
+
+# Build
+make -j$(nproc)
+sudo make setuid
+
+# Move to cmake dir
+cd ..
+cd cmake

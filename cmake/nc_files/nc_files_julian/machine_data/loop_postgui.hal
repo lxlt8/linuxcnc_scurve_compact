@@ -1,0 +1,6 @@
+# ---------- Switching backslash values ----------
+
+net   x-backlash               motion.analog-out-00         =>    ini.0.backlash
+net   y-backlash               motion.analog-out-01         =>    ini.1.backlash
+net   z-backlash               motion.analog-out-02         =>    ini.2.backlash
+net   a-backlash               motion.analog-out-03         =>    ini.3.backlash

@@ -1,0 +1,38 @@
+%
+G21                 ; Set units to millimeters
+G90                 ; Absolute positioning
+G17 				; Top xy plane
+G64 P20 Q0          ; Set path control with tolerance and filter.
+F15000
+G0 X0 Y0 Z0
+G1 Y25 Z25
+G1 Y30 Z0
+G1 Y35 Z25
+G1 Y40 Z0           
+G1 X0 Y100 Z0  
+G1 X20
+
+G19 
+G2 X50 J0 K-20 P3
+G17
+
+G1 X100 Y100 Z0        
+G1 Y90
+G1 Z10
+G1 Y50
+G1 Z0
+
+G18
+G1 Y40
+G3 Y20 I20 P2
+G17
+
+G1 X100 Y0 Z0
+
+G1 X80
+G2 X50 Z-10 I-15 J0 P2
+
+G1 X20 Z0      
+G1 X0 Y0 Z0        
+M30                
+%

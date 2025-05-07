@@ -1,0 +1,14 @@
+#!/bin/bash
+
+CONFIG="../cmake/configs/axis_9_loop/loop_9.ini"
+cd ..
+cd ..
+cd scripts
+. ./rip-environment
+linuxcnc $CONFIG
+
+
+
+
+
+

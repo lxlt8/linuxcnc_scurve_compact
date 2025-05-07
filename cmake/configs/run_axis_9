@@ -1,0 +1,10 @@
+#!/bin/bash
+
+CONFIG="../cmake/configs/axis_9/axis_scurve_9_mm.ini"
+cd ..
+cd ..
+cd scripts
+. ./rip-environment
+linuxcnc $CONFIG
+
+

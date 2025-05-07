@@ -1,0 +1,15 @@
+G90 (set absolute mode)
+G0 X0 Y0 Z0 (rapid move to starting position)
+S100 M3 (turn on the spindle, 100 RPM)
+G33.1 Z-10 K1 I2 $0 (rigid tap a 20 TPI thread 1 deep)
+G0 X25
+
+S200 M3 
+G33.1 Z-20 K1 I2 $0 (rigid tap a 20 TPI thread 1 deep)
+G0 X50 
+
+S500 M3 
+G33.1 Z-20 K1 I2 $0 (rigid tap a 20 TPI thread 1 deep)
+G0 X75
+
+M2 (end program)

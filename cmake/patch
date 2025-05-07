@@ -1,0 +1,13 @@
+#!/bin/bash
+
+cd patch_files
+cp tp.c ../../src/emc/tp
+cp tp.h ../../src/emc/tp
+cp motion.c ../../src/emc/motion
+cp axis_scurve_mm.ini ../../configs/sim/axis
+cd ..
+
+
+
+
+

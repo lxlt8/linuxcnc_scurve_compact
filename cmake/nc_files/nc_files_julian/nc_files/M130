@@ -1,0 +1,55 @@
+#!/bin/bash
+# 
+
+P=${1%.*}
+Q=${2%.3*}
+
+case $P in
+
+254)
+# clear messages/notifications
+halcmd setp axisui.notifications-clear True
+sleep 0.1
+halcmd setp axisui.notifications-clear False
+sleep 0.1 ;;
+
+255)
+# clear the backplot and reload the current file
+axis-remote --clear
+sleep 0.1
+axis-remote --reload & ;;
+
+201)
+halcmd setp tpmod.hal_blend_speed $Q ;;
+
+202)
+Q=${2%.*}
+halcmd setp tpmod.hal_blend_type $Q ;; #S32
+
+203)
+Q=${2%.*}
+halcmd setp tpmod.hal_g0_transition_blend $Q ;; #S32
+
+204)
+Q=${2%.*}
+halcmd setp tpmod.hal_look_ahead_lines $Q ;; #S32
+
+205)
+Q=${2%.*}
+halcmd setp tpmod.hal_max_jerk $Q ;; #S32
+
+206)
+Q=${2%.*}
+halcmd setp tpmod.hal_path_filter_size $Q ;; #32
+
+220)
+halcmd setp halui.program.pause 1
+#halcmd setp halui.program.stop 1
+sleep 0.1
+halcmd setp halui.program.resume 1
+#halcmd setp halui.program.run 1
+
+#*)
+esac
+
+exit 0

@@ -1,0 +1,32 @@
+(author: Julian Koenig)
+(version: 1.0)
+(date: 04.02.2025)
+
+
+o<loop_50_50> sub
+
+#<F_G94cur>    = #1
+#<F_G93cur>    = #2
+#<P_cur>       = #3
+#<Q_cur>       = #4
+#<is_G61>      = #5
+
+G94
+G21                 
+G90       
+
+G64 P0
+
+
+F[#<F_G94cur>]
+G0 X0 Y0 Z0
+             
+G1 X0 Y50        
+G1 X50       
+G1 Y0          
+G1 X0
+
+
+o<loop_50_50> endsub
+
+M2

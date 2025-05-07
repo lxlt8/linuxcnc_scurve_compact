@@ -1,0 +1,133 @@
+(author: Julian Koenig)
+(version: 1.0)
+(date: 03.02.2025)
+
+#1000          = 1 (seed for rand)
+#1001          = 0 (rand return 0 to 1)
+#2001          = 1 (current loop number)
+
+(interpreter for the preview)
+o102 if [#<_task> eq 0]
+   o120 if [#<_hal[pyvcp.loop_nc1]> eq 1]  
+     o<loop_short_xyz>    call [1000][1000][0.1][0.1][0]
+  o120 endif
+  o121 if [#<_hal[pyvcp.loop_nc2]> eq 1]
+    o<loop_square>   call [1000][1000][0.1][0.1][0]
+  o121 endif
+  o122 if [#<_hal[pyvcp.loop_nc3]> eq 1]
+    o<loop_abc>   call [1000][1000][0.1][0.1][0]
+  o122 endif
+  o123 if [#<_hal[pyvcp.loop_nc4]> eq 1]
+    o<loop_axis>   call [1000][1000][0.1][0.1][0]
+  o123 endif
+  o124 if [#<_hal[pyvcp.loop_nc5]> eq 1]
+    o<loop_long>   call [1000][1000][0.1][0.1][0]
+  o124 endif
+  o125 if [#<_hal[pyvcp.loop_nc6]> eq 1]
+    o<loop_smallarcs>   call [1000][1000][0.1][0.1][0]
+  o125 endif
+  o126 if [#<_hal[pyvcp.loop_nc7]> eq 1]
+    o<loop_bigarcs>   call [1000][1000][0.1][0.1][0]
+  o126 endif
+  o127 if [#<_hal[pyvcp.loop_nc8]> eq 1]
+    o<loop_50_50>   call [1000][1000][0.1][0.1][0]
+  o127 endif
+  o128 if [#<_hal[pyvcp.loop_nc9]> eq 1]
+    o<loop_short_xyza>   call [1000][1000][0.1][0.1][0]
+  o128 endif
+o102 endif
+
+
+
+
+
+
+(interpreter for runing code)
+o100 if [#<_task> eq 1]
+o101 while [#2001 LT [[#<_hal[pyvcp.loop_loop_count]>] + 1]]
+  
+  M130 P254 (clear messages)
+  
+  
+  o200 call 
+  #<F_G94cur> = [[[#<_hal[pyvcp.loop_f_g94max]> - #<_hal[pyvcp.loop_f_g94min]>] * #1001] + #<_hal[pyvcp.loop_f_g94min]>]
+  o200 call 
+  #<F_G93cur> = [[[#<_hal[pyvcp.loop_f_g93max]> - #<_hal[pyvcp.loop_f_g93min]>] * #1001] + #<_hal[pyvcp.loop_f_g93min]>]
+  o200 call
+  #<P_cur>    = [[[#<_hal[pyvcp.loop_p_max]>  - #<_hal[pyvcp.loop_p_min]> ] * #1001] + #<_hal[pyvcp.loop_p_min]>]
+  o200 call 
+  #<Q_cur>    = [[[#<_hal[pyvcp.loop_q_max]>  - #<_hal[pyvcp.loop_q_min]> ] * #1001] + #<_hal[pyvcp.loop_q_min]>]
+  o200 call   
+  #<Backlash_cur>  = [[[#<_hal[pyvcp.loop_backlash_max]>  - #<_hal[pyvcp.loop_backlash_min]> ] * #1001] + #<_hal[pyvcp.loop_backlash_min]>]
+  o200 call
+  #<Jerk_cur>      = ROUND[[[#<_hal[pyvcp.loop_jerk_max]>  - #<_hal[pyvcp.loop_jerk_min]> ] * #1001] + #<_hal[pyvcp.loop_jerk_min]>]
+  o200 call
+  #<look_ahead>    = ROUND[[[#<_hal[pyvcp.loop_look_max]>  - #<_hal[pyvcp.loop_look_min]> ] * #1001] + #<_hal[pyvcp.loop_look_min]>]
+  
+  
+  
+  (debug, F%.1f#<F_G94cur> G94; F%.1f#<F_G93cur> G93; P%.3f#<P_cur>; Q%.3f#<Q_cur>)
+  (debug, Backlash %.3f#<Backlash_cur>; Jerk %.0f#<Jerk_cur>; Lookahead %.0f#<look_ahead>)
+  (debug,  Loop:%.0f#2001)
+    
+  M68 E0 Q[#<Backlash_cur>]
+  M68 E1 Q[#<Backlash_cur>]
+  M68 E2 Q[#<Backlash_cur>]
+  M68 E3 Q[#<Backlash_cur>]
+  
+  
+  (M130 P201 Q[0])
+  (M130 P202 Q[2])
+  (M130 P203 Q[0])
+  M130 P204 Q[#<look_ahead>]
+  M130 P205 Q[#<Jerk_cur>]
+  (M130 P206 Q[0])  
+   
+   
+  o110 if [#<_hal[pyvcp.loop_nc1]> eq 1]  
+     o<loop_short_xyz>  call [#<F_G94cur>][#<F_G93cur>][#<P_cur>][#<Q_cur>][#<_hal[pyvcp.loop_g61]>]
+  o110 endif
+  o111 if [#<_hal[pyvcp.loop_nc2]> eq 1]
+    o<loop_square>     call [#<F_G94cur>][#<F_G93cur>][#<P_cur>][#<Q_cur>][#<_hal[pyvcp.loop_g61]>]
+  o111 endif
+  o112 if [#<_hal[pyvcp.loop_nc3]> eq 1]
+    o<loop_abc>     call [#<F_G94cur>][#<F_G93cur>][#<P_cur>][#<Q_cur>][#<_hal[pyvcp.loop_g61]>]
+  o112 endif
+  o113 if [#<_hal[pyvcp.loop_nc4]> eq 1]
+    o<loop_axis>     call [#<F_G94cur>][#<F_G93cur>][#<P_cur>][#<Q_cur>][#<_hal[pyvcp.loop_g61]>]
+  o113 endif
+  o114 if [#<_hal[pyvcp.loop_nc5]> eq 1]
+    o<loop_long>     call [#<F_G94cur>][#<F_G93cur>][#<P_cur>][#<Q_cur>][#<_hal[pyvcp.loop_g61]>]
+  o114 endif
+  o115 if [#<_hal[pyvcp.loop_nc6]> eq 1]
+    o<loop_smallarcs>     call [#<F_G94cur>][#<F_G93cur>][#<P_cur>][#<Q_cur>][#<_hal[pyvcp.loop_g61]>]
+  o115 endif
+  o116 if [#<_hal[pyvcp.loop_nc7]> eq 1]
+    o<loop_bigarcs>     call [#<F_G94cur>][#<F_G93cur>][#<P_cur>][#<Q_cur>][#<_hal[pyvcp.loop_g61]>]
+  o116 endif
+  o117 if [#<_hal[pyvcp.loop_nc8]> eq 1]
+    o<loop_50_50>     call [#<F_G94cur>][#<F_G93cur>][#<P_cur>][#<Q_cur>][#<_hal[pyvcp.loop_g61]>]
+  o117 endif
+  o118 if [#<_hal[pyvcp.loop_nc9]> eq 1]
+    o<loop_short_xyza>     call [#<F_G94cur>][#<F_G93cur>][#<P_cur>][#<Q_cur>][#<_hal[pyvcp.loop_g61]>]
+  o118 endif
+    
+
+    
+  #2001 = [#2001 + 1]
+o101 endwhile
+o100 endif
+
+G10 L20 P#5220 A[#5423 MOD 360]
+M2
+
+
+
+
+o200 sub
+  #1000 = [[106 * #1000] + 1283]
+  #1000 = [#1000 - [6075 * [FIX[#1000 / 6075]]]]
+  #1001 = [[#1000 / 3037] - 1.0]
+  #1001 = ABS[#1001]
+o200 endsub
+

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+thisfile=$(readlink -f "$0")
+thisdir=$(dirname "$thisfile")
+cd "$thisdir" || { echo "E: Could not change directory to '$thisdir'"; exit 1; }
+
+# use default layout
+./xhc-hb04.sh
