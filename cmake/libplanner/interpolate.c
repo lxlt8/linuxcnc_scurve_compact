@@ -24,6 +24,40 @@ void interpolate_abc_uvw(const struct emcmot_segment *seg,
     pos->w = seg->start.w + (seg->end.w - seg->start.w) * progress;
 }
 
+void interpolate_abc_uvw_(const struct emcmot_segment *seg,
+                         const double progress,
+                         struct EmcPose *pos){
+
+    pos->a = seg->a_start + (seg->a_end - seg->a_start) * progress;
+    pos->b = seg->b_start + (seg->b_end - seg->b_start) * progress;
+    pos->c = seg->c_start + (seg->c_end - seg->c_start) * progress;
+    pos->u = seg->u_start + (seg->u_end - seg->u_start) * progress;
+    pos->v = seg->v_start + (seg->v_end - seg->v_start) * progress;
+    pos->w = seg->w_start + (seg->w_end - seg->w_start) * progress;
+}
+
+void interpolate_abc_uvw_peak(const struct emcmot_segment *seg,
+                              const double progress,
+                              struct EmcPose *pos){
+
+    if(progress<=0.5){
+        pos->a = seg->a_start + (seg->a_peak - seg->a_start) * (progress*2);
+        pos->b = seg->b_start + (seg->b_peak - seg->b_start) * (progress*2);
+        pos->c = seg->c_start + (seg->c_peak - seg->c_start) * (progress*2);
+        pos->u = seg->u_start + (seg->u_peak - seg->u_start) * (progress*2);
+        pos->v = seg->v_start + (seg->v_peak - seg->v_start) * (progress*2);
+        pos->w = seg->w_start + (seg->w_peak - seg->w_start) * (progress*2);
+
+    } else {
+        pos->a = seg->a_peak + (seg->a_end - seg->a_peak) * ((progress-0.5)*2);
+        pos->b = seg->b_peak + (seg->b_end - seg->b_peak) * ((progress-0.5)*2);
+        pos->c = seg->c_peak + (seg->c_end - seg->c_peak) * ((progress-0.5)*2);
+        pos->u = seg->u_peak + (seg->u_end - seg->u_peak) * ((progress-0.5)*2);
+        pos->v = seg->v_peak + (seg->v_end - seg->v_peak) * ((progress-0.5)*2);
+        pos->w = seg->w_peak + (seg->w_end - seg->w_peak) * ((progress-0.5)*2);
+    }
+}
+
 void interpolate_line(const struct emcmot_segment *seg,
                       const double progress,
                       struct EmcPose *pos){

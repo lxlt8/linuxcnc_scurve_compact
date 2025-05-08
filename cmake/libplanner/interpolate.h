@@ -19,6 +19,16 @@ void interpolate_abc_uvw(const struct emcmot_segment *seg,
                          const double progress,
                          struct EmcPose *pos);
 
+// Interpolate abc, uvw axis given progress.
+void interpolate_abc_uvw_(const struct emcmot_segment *seg,
+                         const double progress,
+                         struct EmcPose *pos);
+
+// Interpolate abc, uvw axis given progress.
+void interpolate_abc_uvw_peak(const struct emcmot_segment *seg,
+                              const double progress,
+                              struct EmcPose *pos);
+
 // Interpolate a 3d line.
 void interpolate_line(const struct emcmot_segment *seg,
                       const double progress,

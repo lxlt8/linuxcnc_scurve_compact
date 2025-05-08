@@ -109,9 +109,15 @@ static inline int path_clothoid(TP_STRUCT * const tp,
     s1.start.a=s0->end.a;
     s1.start.b=s0->end.b;
     s1.start.c=s0->end.c;
+    s1.start.u=s0->end.u;
+    s1.start.v=s0->end.v;
+    s1.start.w=s0->end.w;
     s1.end.a=s0->end.a;
     s1.end.b=s0->end.b;
     s1.end.c=s0->end.c;
+    s1.end.u=s0->end.u;
+    s1.end.v=s0->end.v;
+    s1.end.w=s0->end.w;
     s1.tag=s2.tag;          // Copy G64 P[x]. Used to set endvel=0.
     s1.id=s2.id;            // Copy gcode line id.
 

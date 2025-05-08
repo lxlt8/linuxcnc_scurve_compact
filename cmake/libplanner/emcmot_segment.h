@@ -44,6 +44,11 @@ struct emcmot_segment {
     PmCartesian center;
     PmCartesian normal;
 
+    // Fillets have a half way peak value.
+    double a_start, b_start, c_start, u_start, v_start, w_start;
+    double a_end, b_end, c_end, u_end, v_end, w_end;
+    double a_peak, b_peak, c_peak, u_peak, v_peak, w_peak;
+
     /* Canon motion type:
      * 0 = clothoid
      * 1  = rapid

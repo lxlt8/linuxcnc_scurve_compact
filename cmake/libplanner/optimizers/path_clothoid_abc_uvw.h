@@ -109,9 +109,15 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
     s1.start.a=s0->end.a;
     s1.start.b=s0->end.b;
     s1.start.c=s0->end.c;
+    s1.start.u=s0->end.u;
+    s1.start.v=s0->end.v;
+    s1.start.w=s0->end.w;
     s1.end.a=s0->end.a;
     s1.end.b=s0->end.b;
     s1.end.c=s0->end.c;
+    s1.end.u=s0->end.u;
+    s1.end.v=s0->end.v;
+    s1.end.w=s0->end.w;
     s1.tag=s2.tag;          // Copy G64 P[x]. Used to set endvel=0.
     s1.id=s2.id;            // Copy gcode line id.
 
@@ -195,31 +201,100 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
     kmax_vel(&s1);
     kmax_vel(&s2);
 
+
+    // We need interpolation for abc, uvw axis to cover 100% of the trajectory.
+    // After the fillets where made, we want to interpolate the abc, uvw axis also
+    // over the fillet trajectory. Therefore we spread out the abc, uvw values to be
+    // covering the fillets. The result is a interpolated peak value for
+    // abc, uvw half way the fillet.
+
+    double progress = 0;
+    double l00 = 0;
+
+    // 1. Fillet peak value. Copy the segment s0 end value to the fillet peak value. This is half way the fillet.
+    s1.a_peak = s0->end.a;
+    s1.b_peak = s0->end.b;
+    s1.c_peak = s0->end.c;
+    s1.u_peak = s0->end.u;
+    s1.v_peak = s0->end.v;
+    s1.w_peak = s0->end.w;
+
+    // Get the previous prevous fillet segment, if it excists.
+    struct emcmot_segment *s00;
+    s00 = 0;
+    if(push_counter(vector_ptr)>1){
+        s00 = vector_at(vector_ptr, push_counter(vector_ptr)-2);
+        if(s00 != NULL && s00->subseg.segment_type == CLOTHOID){
+            l00 = s00->subseg.length;
+        }
+    }
+
+    double ltot = 0;
+
+    ltot = s0->subseg.length + (0.5*s1.subseg.length) + (0.5*l00);
+
+    progress = (0.5*l00) / ltot;
+    s0->a_start = s0->start.a + (s0->end.a - s0->start.a) * progress;
+    s0->b_start = s0->start.b + (s0->end.b - s0->start.b) * progress;
+    s0->c_start = s0->start.c + (s0->end.c - s0->start.c) * progress;
+    s0->u_start = s0->start.u + (s0->end.u - s0->start.u) * progress;
+    s0->v_start = s0->start.v + (s0->end.v - s0->start.v) * progress;
+    s0->w_start = s0->start.w + (s0->end.w - s0->start.w) * progress;
+
+    progress = (s0->subseg.length+(0.5*l00)) / ltot;
+    s0->a_end = s0->start.a + (s0->end.a - s0->start.a) * progress;
+    s0->b_end = s0->start.b + (s0->end.b - s0->start.b) * progress;
+    s0->c_end = s0->start.c + (s0->end.c - s0->start.c) * progress;
+    s0->u_end = s0->start.u + (s0->end.u - s0->start.u) * progress;
+    s0->v_end = s0->start.v + (s0->end.v - s0->start.v) * progress;
+    s0->w_end = s0->start.w + (s0->end.w - s0->start.w) * progress;
+
+    if(s00 != NULL){
+        s00->a_end = s0->a_start;
+        s00->b_end = s0->b_start;
+        s00->c_end = s0->c_start;
+        s00->u_end = s0->u_start;
+        s00->v_end = s0->v_start;
+        s00->w_end = s0->w_start;
+    }
+
+    s1.a_start = s0->a_end;
+    s1.b_start = s0->b_end;
+    s1.c_start = s0->c_end;
+    s1.u_start = s0->u_end;
+    s1.v_start = s0->v_end;
+    s1.w_start = s0->w_end;
+
+    ltot = s2.subseg.length + (0.5*s1.subseg.length) ;
+    progress = (0.5*s1.subseg.length) / ltot;
+
+    s1.a_end = s2.start.a + (s2.end.a - s2.start.a) * progress;
+    s2.a_start = s1.a_end;
+    s2.a_end = s2.end.a;
+
+    s1.b_end = s2.start.b + (s2.end.b - s2.start.b) * progress;
+    s2.b_start = s1.b_end;
+    s2.b_end = s2.end.b;
+
+    s1.c_end = s2.start.c + (s2.end.c - s2.start.c) * progress;
+    s2.c_start = s1.c_end;
+    s2.c_end = s2.end.c;
+
+    s1.u_end = s2.start.u + (s2.end.u - s2.start.u) * progress;
+    s2.u_start = s1.u_end;
+    s2.u_end = s2.end.u;
+
+    s1.v_end = s2.start.v + (s2.end.v - s2.start.v) * progress;
+    s2.v_start = s1.v_end;
+    s2.v_end = s2.end.v;
+
+    s1.w_end = s2.start.w + (s2.end.w - s2.start.w) * progress;
+    s2.w_start = s1.w_end;
+    s2.w_end = s2.end.w;
+
     // Add new segments to queue.
     vector_push_back(ptr, s1); // Clothoid fillet.
     vector_push_back(ptr, s2); // New segment.
-
-    // Shift the abc, uvw endpoints to half way the fillets.
-
-
-    // Original length, new lenght.
-    double lso = s0->length_netto;
-    double nso = s0->subseg.length;
-
-    printf("original lenght s0: %f",lso);
-    printf("trimmed lenght s0: %f",nso);
-
-    double as = s0->start.a;
-    double ae = s0->end.a;
-    double la = ae - as;
-
-    // Factor shorter, new lenght.
-    double nl = (nso / lso) * la;
-    // new end for a at s0:
-    double end_s0 = s0->start.a + nl;
-    double peak_s0 = s0->end.a;
-
-
 
     // Print clothoid data.
     // print_clothoid_segment(&s1.subseg);
@@ -247,7 +322,7 @@ static inline void path_clothoid_interpolate_abc_uvw(TP_STRUCT * const tp,
 
         // Interpolate extra axis.
         struct EmcPose abc_uvw_pi;
-        interpolate_abc_uvw(seg, path->progress,&abc_uvw_pi);
+        interpolate_abc_uvw_(seg, path->progress,&abc_uvw_pi);
         tp->currentPos.a=abc_uvw_pi.a;
         tp->currentPos.b=abc_uvw_pi.b;
         tp->currentPos.c=abc_uvw_pi.c;
@@ -267,7 +342,7 @@ static inline void path_clothoid_interpolate_abc_uvw(TP_STRUCT * const tp,
 
         // Interpolate extra axis.
         struct EmcPose abc_uvw_pi;
-        interpolate_abc_uvw(seg, path->progress,&abc_uvw_pi);
+        interpolate_abc_uvw_(seg, path->progress,&abc_uvw_pi);
         tp->currentPos.a=abc_uvw_pi.a;
         tp->currentPos.b=abc_uvw_pi.b;
         tp->currentPos.c=abc_uvw_pi.c;
@@ -284,9 +359,9 @@ static inline void path_clothoid_interpolate_abc_uvw(TP_STRUCT * const tp,
         tp->currentPos.tran.y=pi[1];
         tp->currentPos.tran.z=pi[2];
 
-        // Interpolate extra axis.
+        // Interpolate extra axis with integrated fillet peak value.
         struct EmcPose abc_uvw_pi;
-        interpolate_abc_uvw(seg, path->progress,&abc_uvw_pi);
+        interpolate_abc_uvw_peak(seg, path->progress,&abc_uvw_pi);
         tp->currentPos.a=abc_uvw_pi.a;
         tp->currentPos.b=abc_uvw_pi.b;
         tp->currentPos.c=abc_uvw_pi.c;

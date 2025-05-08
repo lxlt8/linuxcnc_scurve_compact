@@ -101,7 +101,7 @@ static inline int tpProcessSegment(TP_STRUCT * const tp,
     // path->path_algo=file_path_standard;
     // path->path_algo=file_path_standard_subseg;
     // path->path_algo=file_path_standard_subseg_line_fillet;
-    path->path_algo=file_path_clothoid;
+    path->path_algo=file_path_clothoid_abc_uvw;
 
     if(path->path_algo==file_path_standard){
         res=path_standard(tp,path,seg,vector_ptr);
@@ -306,13 +306,23 @@ void update_gui_dtg_emcpose(TP_STRUCT * const tp,
     emcmotStatus->dtg.tran.y = vector_at(vector_ptr,path->ringbuffer_index)->end.tran.y - tp->currentPos.tran.y;
     emcmotStatus->dtg.tran.z = vector_at(vector_ptr,path->ringbuffer_index)->end.tran.z - tp->currentPos.tran.z;
 
-    emcmotStatus->dtg.a = vector_at(vector_ptr,path->ringbuffer_index)->end.a - tp->currentPos.a;
-    emcmotStatus->dtg.b = vector_at(vector_ptr,path->ringbuffer_index)->end.b - tp->currentPos.b;
-    emcmotStatus->dtg.c = vector_at(vector_ptr,path->ringbuffer_index)->end.c - tp->currentPos.c;
+    if(path->path_algo==file_path_clothoid_abc_uvw){
+        emcmotStatus->dtg.a =  fabs(vector_at(vector_ptr,path->ringbuffer_index)->a_end - tp->currentPos.a);
+        emcmotStatus->dtg.b = fabs(vector_at(vector_ptr,path->ringbuffer_index)->b_end - tp->currentPos.b);
+        emcmotStatus->dtg.c =  fabs(vector_at(vector_ptr,path->ringbuffer_index)->c_end - tp->currentPos.c);
 
-    emcmotStatus->dtg.u = vector_at(vector_ptr,path->ringbuffer_index)->end.u - tp->currentPos.u;
-    emcmotStatus->dtg.v = vector_at(vector_ptr,path->ringbuffer_index)->end.v - tp->currentPos.v;
-    emcmotStatus->dtg.w = vector_at(vector_ptr,path->ringbuffer_index)->end.w - tp->currentPos.w;
+        emcmotStatus->dtg.u =  fabs(vector_at(vector_ptr,path->ringbuffer_index)->u_end - tp->currentPos.u);
+        emcmotStatus->dtg.v =  fabs(vector_at(vector_ptr,path->ringbuffer_index)->v_end - tp->currentPos.v);
+        emcmotStatus->dtg.w =  fabs(vector_at(vector_ptr,path->ringbuffer_index)->w_end - tp->currentPos.w);
+    } else {
+        emcmotStatus->dtg.a = vector_at(vector_ptr,path->ringbuffer_index)->end.a - tp->currentPos.a;
+        emcmotStatus->dtg.b = vector_at(vector_ptr,path->ringbuffer_index)->end.b - tp->currentPos.b;
+        emcmotStatus->dtg.c = vector_at(vector_ptr,path->ringbuffer_index)->end.c - tp->currentPos.c;
+
+        emcmotStatus->dtg.u = vector_at(vector_ptr,path->ringbuffer_index)->end.u - tp->currentPos.u;
+        emcmotStatus->dtg.v = vector_at(vector_ptr,path->ringbuffer_index)->end.v - tp->currentPos.v;
+        emcmotStatus->dtg.w = vector_at(vector_ptr,path->ringbuffer_index)->end.w - tp->currentPos.w;
+    }
 }
 
 /* Rigid tap cycle.
@@ -578,16 +588,21 @@ void tpUpdateGui(TP_STRUCT * const tp,
     // Choose interpolation model.
     if(path->path_algo==file_path_standard){
         path_standard_interpolate(tp,path,segment);
-    }
-    if(path->path_algo==file_path_standard_subseg){
-        path_standard_subseg_interpolate(tp,path,segment);
-    }
-    if(path->path_algo==file_path_standard_subseg_line_fillet){
-        path_standard_subseg_line_fillet_interpolate(tp,path,segment);
-    }
-    if(path->path_algo==file_path_clothoid){
-        path_clothoid_interpolate(tp,path,segment);
-    }
+    } else
+        if(path->path_algo==file_path_standard_subseg){
+            path_standard_subseg_interpolate(tp,path,segment);
+        } else
+            if(path->path_algo==file_path_standard_subseg_line_fillet){
+                path_standard_subseg_line_fillet_interpolate(tp,path,segment);
+            } else
+                if(path->path_algo==file_path_clothoid){
+                    path_clothoid_interpolate(tp,path,segment);
+                } else
+                    if(path->path_algo==file_path_clothoid_abc_uvw){
+                        path_clothoid_interpolate_abc_uvw(tp,path,segment);
+                    } else {
+                        printf("no interpolation model to update gui found! Abort. \n");
+                    }
 
     /* // Update radius to path -> hal pin for plasma's
      * Canon motion type:
@@ -836,7 +851,7 @@ inline void tpUpdateScurveCycle(TP_STRUCT * const tp,
     *hal_component_max_cycle_time_scurve_ns->Pin = fmax(*hal_component_max_cycle_time_scurve_ns->Pin, (double)elapsed_ns);
 
     if(*hal_reset_max_cycle_time->Pin){
-         *hal_component_max_cycle_time_scurve_ns->Pin = 0;
+        *hal_component_max_cycle_time_scurve_ns->Pin = 0;
     }
 }
 
@@ -907,7 +922,7 @@ int tpRunCycle(TP_STRUCT * const tp, long period){
     }
 
     if(*hal_reset_max_cycle_time->Pin){
-         *hal_component_max_cycle_time_ns->Pin = 0;
+        *hal_component_max_cycle_time_ns->Pin = 0;
     }
 
     return 0;
