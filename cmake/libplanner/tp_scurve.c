@@ -853,6 +853,14 @@ inline void tpUpdateScurveCycle(TP_STRUCT * const tp,
     if(*hal_reset_max_cycle_time->Pin){
         *hal_component_max_cycle_time_scurve_ns->Pin = 0;
     }
+
+    // Monitor acceleration extrema used by scurve.
+    *hal_acc_extrema->Pin = fmax(*hal_acc_extrema->Pin,fabs(path->curacc));
+
+    // Reset acceleration extrema.
+    if(*hal_reset_acc_extrema->Pin){
+        *hal_acc_extrema->Pin = 0;
+    }
 }
 
 // When program run's this is the cycle function.
@@ -921,6 +929,7 @@ int tpRunCycle(TP_STRUCT * const tp, long period){
         // printf("cycle time alarm. \n");
     }
 
+    // Reset cycle time extrema.
     if(*hal_reset_max_cycle_time->Pin){
         *hal_component_max_cycle_time_ns->Pin = 0;
     }

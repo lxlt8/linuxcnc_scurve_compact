@@ -42,9 +42,34 @@ G64 P0.01 Q0.0
 
 ---
 
+## Compile time values
+
+path: ~/linuxcnc/cmake/libplanner/vector.h
+
+- `#define VECTOR_BUFFER_SIZE 40`: ringbuffer size. Minimal 10, Maximal 100
+
+---
+
 ## HAL Pins & Parameters
 
+### `bit_data_t`
+- `hal_enable_keyboard_jog`: Enable keyboard jog when program is in pause. 
+- `hal_jog_x_plus`: Jog x plus.
+- `hal_jog_x_min`: Jog x min.
+- `hal_jog_y_plus`: Jog y plus.
+- `hal_jog_y_min`: Jog y min.
+- `hal_jog_z_plus`: Jog z plus.
+- `hal_jog_z min`: Jog z min.
+- `hal_reset_max_cycle_time`: Reset cycletime extrema to zero.
+- `hal_reset_acc_extrema`: Reset acceleration extrema to zero.
+
 ### `float_data_t`
+- `hal_acc_extrema`: Acceleration extrema for scurve.
+- `hal_component_cycle_time_ns`: Overall component cycle time in nano seconds.
+- `hal_component_max_cycle_time_ns`: Component cycle time extrema in nano seconds.
+- `hal_component_max_cycle_time_scurve_ns`: Scurve cycle time extrema in nano seconds.
+- `hal_tangential_knife_angle"`: Angle output in the direction off the toolpath. 3d Top view.
+- `hal_segment_radius"`: Information about current gcode segment radius. Zero for line.
 - `hal_tp_curvel`: Current velocity of motion (mm/s, displayed as mm/min in GUI).
 - `hal_tp_curacc`: Current acceleration of motion (mm/s²).
 - `hal_tp_curpos`: Current position (mm).
@@ -76,7 +101,6 @@ G64 P0.01 Q0.0
 
 ### `param_float_data_t`
 - `hal_max_jerk`: S-curve maximum jerk (edit when motion is not active).
-- `hal_smooth_filter`: (Not used) Filters position updates to reduce acceleration spikes.
 
 ---
 

@@ -1,14 +1,19 @@
 # Halshow settings
 # This file is generated automatically.
-wm geometry . 748x744+245+414
+wm geometry . 748x744+372+38
 placeFrames 0.3997093023255814
 set ::ratio 0.3997093023255814
 set ::old_w_leftf 160
 set ::watchlist {
-    pin+joint.0.cia402-drive-is-homed
-    pin+joint.0.cia402-enable
-    pin+joint.0.cia402-home-drive
-    pin+joint.0.cia402-pos-fb
+    pin+tpmod.hal_acc_extrema
+    pin+tpmod.hal_tp_curacc
+    pin+tpmod.hal_tap_synchronized_motion
+    pin+tpmod.hal_traject_buffer_dist
+    pin+tpmod.hal_trajectory_end
+    pin+tpmod.hal_use_real_deviation
+    pin+tpmod.hal_buffer_overflow
+    param+tpmod.hal_max_jerk
+    pin+tpmod.hal_reset_acc_extrema
 }
 set ::workmode watchhal
 set ::watchInterval 100

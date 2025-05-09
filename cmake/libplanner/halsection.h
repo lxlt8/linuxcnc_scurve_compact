@@ -38,14 +38,15 @@ typedef struct { // Param int.
 } param_s32_data_t;
 
 bit_data_t
-*hal_jog_x_plus,
+*hal_jog_x_plus,                // Jog when program is in pause.
 *hal_jog_x_min,
 *hal_jog_y_plus,
 *hal_jog_y_min,
 *hal_jog_z_plus,
 *hal_jog_z_min,
-*hal_enable_keyboard_jog,
-*hal_reset_max_cycle_time;
+*hal_enable_keyboard_jog,       // Enable keyboard jog. Hal jog enabled by default.
+*hal_reset_max_cycle_time,      // Reset max cycle time extrema to zero.
+*hal_reset_acc_extrema;         // Reset acceleration extrema to zero.
 
 float_data_t
 *hal_tp_curvel,                 // Current velocity of motion. mm/s, gui display's: mm/min.
@@ -64,9 +65,10 @@ float_data_t
 *hal_segment_ve,                // Current segment velocity begin.
 *hal_segment_radius,            // Radius of current segment. May vary on clothoid.
 *hal_tangential_knife_angle,    // Current tangential knife angle.
-*hal_component_cycle_time_ns,      // Monitor cycle time in ms.
-*hal_component_max_cycle_time_ns,  // Monitor max cycle time in ms.
-*hal_component_max_cycle_time_scurve_ns;
+*hal_component_cycle_time_ns,               // Monitor cycle time in ms.
+*hal_component_max_cycle_time_ns,           // Monitor max cycle time in ns.
+*hal_component_max_cycle_time_scurve_ns,    // Monitor max cycle time for scurve in ns.
+*hal_acc_extrema;                           // Max acceleration used by scurve.
 
 s32_data_t
 *hal_ring_buffer_index,         // Current active segment nr. 0-Buffer size.
@@ -122,6 +124,12 @@ static inline void setup_hal_pins(int tpmod_id,
 
     hal_reset_max_cycle_time = (bit_data_t*)hal_malloc(sizeof(bit_data_t));
     hal_pin_bit_new("tpmod.hal_reset_max_cycle_time",HAL_IN,&(hal_reset_max_cycle_time->Pin),tpmod_id);
+
+    hal_reset_acc_extrema = (bit_data_t*)hal_malloc(sizeof(bit_data_t));
+    hal_pin_bit_new("tpmod.hal_reset_acc_extrema",HAL_IN,&(hal_reset_acc_extrema->Pin),tpmod_id);
+
+    hal_acc_extrema = (float_data_t*)hal_malloc(sizeof(float_data_t));
+    hal_pin_float_new("tpmod.hal_acc_extrema",HAL_OUT,&(hal_acc_extrema->Pin),tpmod_id);
 
     hal_component_cycle_time_ns = (float_data_t*)hal_malloc(sizeof(float_data_t));
     hal_pin_float_new("tpmod.hal_component_cycle_time_ns",HAL_OUT,&(hal_component_cycle_time_ns->Pin),tpmod_id);

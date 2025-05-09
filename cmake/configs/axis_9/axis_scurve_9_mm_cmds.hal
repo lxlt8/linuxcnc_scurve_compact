@@ -1,4 +1,4 @@
-# Thu May 08 14:01:17 CEST 2025
+# Fri May 09 09:37:14 CEST 2025
 #
 # This file:    ./axis_scurve_9_mm_cmds.hal
 # Created by:   /home/user/linuxcnc_distro_files/linuxcnc/lib/hallib/basic_sim.tcl
@@ -1012,6 +1012,7 @@ setp tpmod.hal_jog_y_min            FALSE
 setp tpmod.hal_jog_y_plus           FALSE
 setp tpmod.hal_jog_z_min            FALSE
 setp tpmod.hal_jog_z_plus           FALSE
+setp tpmod.hal_reset_acc_extrema    FALSE
 setp tpmod.hal_reset_max_cycle_time FALSE
 setp tpmod.hal_use_real_deviation   0
 # realtime thread/function links
