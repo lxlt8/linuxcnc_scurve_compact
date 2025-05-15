@@ -1,0 +1,1 @@
+/usr/bin/cc -fPIC -shared -Wl,-soname,cia402.so -o cia402.so CMakeFiles/cia402.dir/cia402.c.o  -Wl,-rpath,/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../lib /home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../lib/liblinuxcnchal.so -ltcl8.6 -ltk8.6 -lX11 -lm -ltirpc -pthread

@@ -1,0 +1,302 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "cia402.so"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"ADD_LIBRARY",
+			"install",
+			"target_link_libraries",
+			"add_definitions",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 31,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 59,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 49,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 29,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 10,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 11,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 12,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 13,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 14,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 15,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 16,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 17,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 18,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 19,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 20,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 4,
+					"define" : "RTAPI"
+				},
+				{
+					"backtrace" : 4,
+					"define" : "_GNU_SOURCE"
+				},
+				{
+					"backtrace" : 4,
+					"define" : "__MODULE__"
+				},
+				{
+					"define" : "cia402_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 5,
+					"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../src"
+				},
+				{
+					"backtrace" : 6,
+					"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../src/rtapi"
+				},
+				{
+					"backtrace" : 7,
+					"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../src/hal"
+				},
+				{
+					"backtrace" : 8,
+					"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../src/emc/motion"
+				},
+				{
+					"backtrace" : 9,
+					"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../src/emc/nml_intf"
+				},
+				{
+					"backtrace" : 10,
+					"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../src/emc/kinematics"
+				},
+				{
+					"backtrace" : 11,
+					"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../src/emc/tp"
+				},
+				{
+					"backtrace" : 12,
+					"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../src/libnml/posemath"
+				},
+				{
+					"backtrace" : 13,
+					"path" : "/usr/include/tcl8.6"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/usr/lib/x86_64-linux-gnu"
+				},
+				{
+					"backtrace" : 15,
+					"path" : "/usr/include/X11"
+				},
+				{
+					"backtrace" : 3,
+					"isSystem" : true,
+					"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../include"
+				}
+			],
+			"language" : "C",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"id" : "cia402::@6890427a1f51a3e7e1df",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 2,
+				"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../rtlib"
+			},
+			{
+				"backtrace" : 2,
+				"path" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../rtlib"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "/usr/local"
+		}
+	},
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-Wl,-rpath,/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../lib",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../lib/liblinuxcnchal.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-ltcl8.6",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-ltk8.6",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-lX11",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-lm",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-ltirpc",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-pthread",
+				"role" : "libraries"
+			}
+		],
+		"language" : "C"
+	},
+	"name" : "cia402",
+	"nameOnDisk" : "cia402.so",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "cia402.c",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}

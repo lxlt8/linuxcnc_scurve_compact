@@ -368,32 +368,33 @@ inline void setup_hal_pins(int comp_id){
                         // shmem_ptr->insert_memory_block(ss.str(), bool_value);
                     } else if (data_type == UINT8) {
                         ss << "UINT8";
-
                         std::string str = ss.str();
                         const char* name = str.c_str();
-                        u8_data_t *u8;
-                        u8 = (u8_data_t*)hal_malloc(sizeof(u8_data_t));
-                        int r=hal_pin_u8_new(name,hal_dir,&(u8->Pin),comp_id);
+                        u32_data_t *u32;
+                        u32 = (u32_data_t*)hal_malloc(sizeof(u32_data_t));
+                        int r=hal_pin_u32_new(name,hal_dir,&(u32->Pin),comp_id);
+
                         if(r!=0){
-                            std::cout<<"hal pin u8 new failed"<<std::endl;
+                            std::cout<<"hal pin u32 new failed"<<std::endl;
                         }
-                        *u8->Pin = 0;
-                        std::cout<<"setup hal pin type : u8, name:"<<ss.str()<<" hal dir:"<<hal_dir_str<<" value:"<< *u8->Pin <<std::endl;
+                        *u32->Pin = 0;
+                        std::cout<<"setup hal pin type : u8, name:"<<ss.str()<<" hal dir:"<<hal_dir_str<<" value:"<< *u32->Pin <<std::endl;
+
 
                     } else if (data_type == UINT16) {
                         ss << "UINT16";
-
                         std::string str = ss.str();
                         const char* name = str.c_str();
-                        u16_data_t *u16;
-                        u16 = (u16_data_t*)hal_malloc(sizeof(u16_data_t));
-                        int r=hal_pin_u16_new(name,hal_dir,&(u16->Pin),comp_id);
+                        u32_data_t *u32;
+                        u32 = (u32_data_t*)hal_malloc(sizeof(u32_data_t));
+                        int r=hal_pin_u32_new(name,hal_dir,&(u32->Pin),comp_id);
+
                         if(r!=0){
-                            std::cout<<"hal pin u16 new failed"<<std::endl;
+                            std::cout<<"hal pin u32 new failed"<<std::endl;
                         }
-                        *u16->Pin = 0;
-                        std::cout<<"setup hal pin type : u16, name:"<<ss.str()<<" hal dir:"<<hal_dir_str<<" value:"<< *u16->Pin <<std::endl;
-                        // shmem_ptr->insert_memory_block(ss.str(), int_value);
+                        *u32->Pin = 0;
+                        std::cout<<"setup hal pin type : u16, name:"<<ss.str()<<" hal dir:"<<hal_dir_str<<" value:"<< *u32->Pin <<std::endl;
+
 
                     } else if (data_type == UINT32) {
                         ss << "UINT32";
@@ -429,28 +430,28 @@ inline void setup_hal_pins(int comp_id){
 
                         std::string str = ss.str();
                         const char* name = str.c_str();
-                        s8_data_t *s8;
-                        s8 = (s8_data_t*)hal_malloc(sizeof(s8_data_t));
-                        int r=hal_pin_s8_new(name,hal_dir,&(s8->Pin),comp_id);
+                        s32_data_t *s32;
+                        s32 = (s32_data_t*)hal_malloc(sizeof(s32_data_t));
+                        int r=hal_pin_s32_new(name,hal_dir,&(s32->Pin),comp_id);
                         if(r!=0){
-                            std::cout<<"hal pin s8 new failed"<<std::endl;
+                            std::cout<<"hal pin s32 new failed"<<std::endl;
                         }
-                        *s8->Pin = 0;
-                        std::cout<<"setup hal pin type : s8, name:"<<ss.str()<<" hal dir:"<<hal_dir_str<<" value:"<< *s8->Pin <<std::endl;
+                        *s32->Pin = 0;
+                        std::cout<<"setup hal pin type : s8, name:"<<ss.str()<<" hal dir:"<<hal_dir_str<<" value:"<< *s32->Pin <<std::endl;
 
                     } else if (data_type == SINT16) {
                         ss << "SINT16";
 
                         std::string str = ss.str();
                         const char* name = str.c_str();
-                        s16_data_t *s16;
-                        s16 = (s16_data_t*)hal_malloc(sizeof(s16_data_t));
-                        int r=hal_pin_s16_new(name,hal_dir,&(s16->Pin),comp_id);
+                        s32_data_t *s32;
+                        s32 = (s32_data_t*)hal_malloc(sizeof(s32_data_t));
+                        int r=hal_pin_s32_new(name,hal_dir,&(s32->Pin),comp_id);
                         if(r!=0){
-                            std::cout<<"hal pin s16 new failed"<<std::endl;
+                            std::cout<<"hal pin s32 new failed"<<std::endl;
                         }
-                        *s16->Pin = 0;
-                        std::cout<<"setup hal pin type : s16, name:"<<ss.str()<<" hal dir:"<<hal_dir_str<<" value:"<< *s16->Pin <<std::endl;
+                        *s32->Pin = 0;
+                        std::cout<<"setup hal pin type : s16, name:"<<ss.str()<<" hal dir:"<<hal_dir_str<<" value:"<< *s32->Pin <<std::endl;
 
                     } else if (data_type == SINT32) {
                         ss << "SINT32";
@@ -556,9 +557,9 @@ inline void update_hal_pins(){
         uint8_t state =  device.slave.al_state;
 //        std::cout<<"device name:"<<device.slave.name<<std::endl;
 //        std::cout<<"device status bit0 slave state init:"<< ((state & 0x01) != 0) <<std::endl;
-        std::cout<<"device status bit1 slave state pre op:"<< ((state & 0x02) != 0) <<std::endl;
+//        std::cout<<"device status bit1 slave state pre op:"<< ((state & 0x02) != 0) <<std::endl;
 //        std::cout<<"device status bit2 slave state safe op:"<< ((state & 0x04) != 0) <<std::endl;
-        std::cout<<"device status bit3 slave state op:"<< ((state & 0x08) != 0) <<std::endl;
+//        std::cout<<"device status bit3 slave state op:"<< ((state & 0x08) != 0) <<std::endl;
 //        std::cout<<"device status bit4 slave state reserved:"<< ((state & 0x10) != 0) <<std::endl;
 //        std::cout<<"device status bit5 slave state reserved:"<< ((state & 0x20) != 0) <<std::endl;
 //        std::cout<<"device status bit6 slave state error:"<< ((state & 0x40) != 0) <<std::endl;
@@ -627,62 +628,62 @@ inline void update_hal_pins(){
                     }
 
                     if (data_type == UINT8 && pdo_type==READ) {
-                        EC_WRITE_U8(domain1_pd + device.offset, ptr->u8);
+                        EC_WRITE_U32(domain1_pd + device.offset, ptr->u);
 
                     }
                     if (data_type == UINT8 && pdo_type==TRANSMIT) {
-                        ptr->u8 = EC_READ_U8(domain1_pd + device.offset);
+                        ptr->u = EC_READ_U32(domain1_pd + device.offset);
                     }
 
                     if (data_type == UINT16 && pdo_type==READ) {
-                        EC_WRITE_U16(domain1_pd + device.offset, ptr->u16);
+                        EC_WRITE_U32(domain1_pd + device.offset, ptr->u);
                     }
                     if (data_type == UINT16 && pdo_type==TRANSMIT) {
-                        ptr->u16 = EC_READ_U16(domain1_pd + device.offset);
+                        ptr->u = EC_READ_U32(domain1_pd + device.offset);
                     }
 
                     if (data_type == UINT32 && pdo_type==READ) {
-                        EC_WRITE_U16(domain1_pd + device.offset, ptr->u32);
+                        EC_WRITE_U32(domain1_pd + device.offset, ptr->u);
                     }
                     if (data_type == UINT32 && pdo_type==TRANSMIT) {
-                        ptr->u32 = EC_READ_U32(domain1_pd + device.offset);
+                        ptr->u = EC_READ_U32(domain1_pd + device.offset);
                     }
 
                     if (data_type == UINT64 && pdo_type==READ) {
-                        EC_WRITE_U64(domain1_pd + device.offset, ptr->u64);
+                        EC_WRITE_U64(domain1_pd + device.offset, ptr->lu);
                     }
                     if (data_type == UINT64 && pdo_type==TRANSMIT) {
-                        ptr->u64 = EC_READ_U64(domain1_pd + device.offset);
+                        ptr->lu = EC_READ_U64(domain1_pd + device.offset);
                     }
 
 
                     // S types.
                     if (data_type == SINT8 && pdo_type==READ) {
-                        EC_WRITE_S8(domain1_pd + device.offset, ptr->s8);
+                        EC_WRITE_S32(domain1_pd + device.offset, ptr->s);
                     }
                     if (data_type == SINT8 && pdo_type==TRANSMIT) {
-                        ptr->s8 = EC_READ_S8(domain1_pd + device.offset);
+                        ptr->s = EC_READ_S32(domain1_pd + device.offset);
                     }
 
                     if (data_type == SINT16 && pdo_type==READ) {
-                        EC_WRITE_S16(domain1_pd + device.offset, ptr->s16);
+                        EC_WRITE_S32(domain1_pd + device.offset, ptr->s);
                     }
                     if (data_type == SINT16 && pdo_type==TRANSMIT) {
-                        ptr->s16 = EC_READ_S16(domain1_pd + device.offset);
+                        ptr->s = EC_READ_S32(domain1_pd + device.offset);
                     }
 
                     if (data_type == SINT32 && pdo_type==READ) {
-                        EC_WRITE_S16(domain1_pd + device.offset, ptr->s32);
+                        EC_WRITE_S32(domain1_pd + device.offset, ptr->s);
                     }
                     if (data_type == SINT32 && pdo_type==TRANSMIT) {
-                        ptr->s32 = EC_READ_S32(domain1_pd + device.offset);
+                        ptr->s = EC_READ_S32(domain1_pd + device.offset);
                     }
 
                     if (data_type == SINT64 && pdo_type==READ) {
-                        EC_WRITE_S64(domain1_pd + device.offset, ptr->s64);
+                        EC_WRITE_S64(domain1_pd + device.offset, ptr->ls);
                     }
                     if (data_type == SINT64 && pdo_type==TRANSMIT) {
-                        ptr->s64 = EC_READ_S64(domain1_pd + device.offset);
+                        ptr->ls = EC_READ_S64(domain1_pd + device.offset);
                     }
 
                     // Todo..

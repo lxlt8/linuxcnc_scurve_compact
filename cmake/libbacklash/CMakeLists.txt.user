@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 9.0.2, 2025-05-02T18:58:52. -->
+<!-- Written by QtCreator 9.0.2, 2025-05-13T12:07:50. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -89,7 +89,7 @@
    <value type="QString" key="DeviceType">Desktop</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Imported Kit</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Imported Kit</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{c57c025a-0c76-4daf-99e4-b7933a2e1dcb}</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{d95a97c3-64e2-4b0e-a7de-9a301d5d0284}</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="qlonglong" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
@@ -103,8 +103,8 @@
 -DCMAKE_PREFIX_PATH:PATH=%{Qt:QT_INSTALL_PREFIX}
 -DCMAKE_C_COMPILER:FILEPATH=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:FILEPATH=%{Compiler:Executable:Cxx}</value>
-    <value type="QString" key="CMake.Source.Directory">/home/user/linuxcnc_scurve_compact/cmake/libbacklash</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/user/linuxcnc_scurve_compact/cmake/libbacklash/build</value>
+    <value type="QString" key="CMake.Source.Directory">/home/user/linuxcnc_distro_files/linuxcnc/cmake/libbacklash</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/user/linuxcnc_distro_files/linuxcnc/cmake/libbacklash/build</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="QString" key="CMakeProjectManager.MakeStep.BuildPreset"></value>
@@ -165,6 +165,23 @@
     <value type="bool" key="Analyzer.Perf.Settings.UseGlobalSettings">true</value>
     <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
     <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
+    <valuelist type="QVariantList" key="Analyzer.Valgrind.VisibleErrorKinds">
+     <value type="QString">0</value>
+     <value type="QString">1</value>
+     <value type="QString">2</value>
+     <value type="QString">3</value>
+     <value type="QString">4</value>
+     <value type="QString">5</value>
+     <value type="QString">6</value>
+     <value type="QString">7</value>
+     <value type="QString">8</value>
+     <value type="QString">9</value>
+     <value type="QString">10</value>
+     <value type="QString">11</value>
+     <value type="QString">12</value>
+     <value type="QString">13</value>
+     <value type="QString">14</value>
+    </valuelist>
     <valuelist type="QVariantList" key="CustomOutputParsers"/>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>

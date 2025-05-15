@@ -1,0 +1,1 @@
+/home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/../../rtlib/cia402.so

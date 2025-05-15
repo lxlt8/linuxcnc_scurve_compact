@@ -87,6 +87,10 @@ int tpCreate(TP_STRUCT * const tp, int _queueSize,int id){
     // For sure.
     zero_emc_pose(&tp->currentPos);
 
+    // Is zero at startup.
+    // printf("aLimit: %f \n",tp->aLimit);
+    // printf("aMaxCartesian: %f \n",tp->aMaxCartesian);
+
     return 1;
 }
 
@@ -995,7 +999,10 @@ int tpSetAmax(TP_STRUCT * const tp, double aMax){
     if (!tp || aMax <= 0.0) {
         return -1;
     }
-    // printf("tpAmax, INI MAX_LINEAR_ACCELERATION: %f \n",aMax);
+
+    aMax *= 0.5;
+
+    printf("tpAmax, INI MAX_LINEAR_ACCELERATION: %f \n",aMax);
     tp->aMax=aMax;
     return 0;
 }

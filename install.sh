@@ -6,4 +6,4 @@ cd cmake
 ./patch
 ./deps_lcnc
 ./build_lcnc
-./build_cmake_rm
+./build_cmake

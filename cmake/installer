@@ -5,7 +5,7 @@
 echo -e "\e[32mCurrent directory after deps_lcnc: $(pwd)\e[0m"
 ./build_lcnc
 echo -e "\e[32mCurrent directory after build_lcnc: $(pwd)\e[0m"
-./build_cmake_rm
+./build_cmake
 echo -e "\e[32mCurrent directory after build_cmake: $(pwd)\e[0m"
 
 echo "installer finished."

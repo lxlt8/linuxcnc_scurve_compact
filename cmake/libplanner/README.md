@@ -68,7 +68,7 @@ path: ~/linuxcnc/cmake/libplanner/vector.h
 - `hal_component_cycle_time_ns`: Overall component cycle time in nano seconds.
 - `hal_component_max_cycle_time_ns`: Component cycle time extrema in nano seconds.
 - `hal_component_max_cycle_time_scurve_ns`: Scurve cycle time extrema in nano seconds.
-- `hal_tangential_knife_angle"`: Angle output in the direction off the toolpath. 3d Top view.
+- `hal_tangential_knife_angle"`: Angle output in the direction off the toolpath. 3d Top view. Unit: degrees.
 - `hal_segment_radius"`: Information about current gcode segment radius. Zero for line.
 - `hal_tp_curvel`: Current velocity of motion (mm/s, displayed as mm/min in GUI).
 - `hal_tp_curacc`: Current acceleration of motion (mm/s²).
@@ -110,6 +110,7 @@ path: ~/linuxcnc/cmake/libplanner/vector.h
 - S-curve motion profile for smooth acceleration and deceleration.
 - Clothoid 3D deviation for precise motion planning.
 - Look-ahead functionality for efficient path planning.
+- Ultra fast gcode ringbuffer.
 - Jog x,y,z keyboard button press in pause state. Resumes first xy axis, then z axis. 
   Needs tpmod.hal_enable_keyboard_jog pin to be set to : 1
 - Jog x,y,z in pause state using hal pins :
@@ -122,7 +123,7 @@ path: ~/linuxcnc/cmake/libplanner/vector.h
 
 ## Todo
 
-- Tangential knife rotation output to hal float pin. Unit [Degrees].
+- 
 
 ---
 

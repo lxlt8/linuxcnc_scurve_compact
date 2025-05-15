@@ -17,13 +17,13 @@ typedef struct {
     hal_bit_t *Pin;
 } bit_data_t;
 
-typedef struct { // UINT8
-    hal_u8_t *Pin;
-} u8_data_t;
+//typedef struct { // UINT8
+//    hal_u8_t *Pin;
+//} u8_data_t;
 
-typedef struct { // UINT16
-    hal_u16_t *Pin;
-} u16_data_t;
+//typedef struct { // UINT16
+//    hal_u16_t *Pin;
+//} u16_data_t;
 
 typedef struct { // UINT32
     hal_u32_t *Pin;
@@ -33,13 +33,13 @@ typedef struct { // UINT64
     hal_u64_t *Pin;
 } u64_data_t;
 
-typedef struct {
-    hal_s8_t *Pin;
-} s8_data_t;
+//typedef struct {
+//    hal_s8_t *Pin;
+//} s8_data_t;
 
-typedef struct {
-    hal_s16_t *Pin;
-} s16_data_t;
+//typedef struct {
+//    hal_s16_t *Pin;
+//} s16_data_t;
 
 typedef struct {
     hal_s32_t *Pin;
