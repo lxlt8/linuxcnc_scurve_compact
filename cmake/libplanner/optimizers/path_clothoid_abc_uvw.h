@@ -66,6 +66,21 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
         kmax_arc_line(&s2);
         kmax_vel(&s2);
         init_feed(tp,&s2);
+
+        s2.a_start = s2.start.a;
+        s2.b_start = s2.start.b;
+        s2.c_start = s2.start.c;
+        s2.u_start = s2.start.u;
+        s2.v_start = s2.start.v;
+        s2.w_start = s2.start.w;
+
+        s2.a_end = s2.end.a;
+        s2.b_end = s2.end.b;
+        s2.c_end = s2.end.c;
+        s2.u_end = s2.end.u;
+        s2.v_end = s2.end.v;
+        s2.w_end = s2.end.w;
+
         vector_push_back(ptr, s2);
         return 0;
     }
@@ -87,6 +102,21 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
         s2.trajectory_length_end = s2.trajectory_length_begin + s2.length_netto;
         path->trajectory_length=s2.trajectory_length_end;
         init_feed(tp,&s2);
+
+        s2.a_start = s2.start.a;
+        s2.b_start = s2.start.b;
+        s2.c_start = s2.start.c;
+        s2.u_start = s2.start.u;
+        s2.v_start = s2.start.v;
+        s2.w_start = s2.start.w;
+
+        s2.a_end = s2.end.a;
+        s2.b_end = s2.end.b;
+        s2.c_end = s2.end.c;
+        s2.u_end = s2.end.u;
+        s2.v_end = s2.end.v;
+        s2.w_end = s2.end.w;
+
         vector_push_back(ptr, s2);
         return 0;
     }
@@ -96,7 +126,6 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
         s2.trajectory_length_begin = s0->trajectory_length_end;
         s2.trajectory_length_end = s2.trajectory_length_begin + s2.length_netto;
         path->trajectory_length=s2.trajectory_length_end;
-
 
         s2.a_start = s2.start.a;
         s2.b_start = s2.start.b;
