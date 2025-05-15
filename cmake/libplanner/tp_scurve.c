@@ -105,6 +105,7 @@ static inline int tpProcessSegment(TP_STRUCT * const tp,
     // path->path_algo=file_path_standard;
     // path->path_algo=file_path_standard_subseg;
     // path->path_algo=file_path_standard_subseg_line_fillet;
+    // path->path_algo=file_path_clothoid;
     path->path_algo=file_path_clothoid_abc_uvw;
 
     if(path->path_algo==file_path_standard){
