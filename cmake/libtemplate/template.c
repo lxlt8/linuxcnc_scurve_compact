@@ -70,22 +70,7 @@ static int comp_idx;            // Component ID
 static void template_update();
 static int setup_pins();
 
-int sc_res_x = 0;
-
-double maxjerk      = 20;
-double maxvel       = 50;
-double maxacc       = 10;
-double cycletime    = 0.001;
-
-double endvel       = 0;
-double endacc       = 0;
-double tarpos       = 0;
-int pausing         = 0;
-
 double hartbeat     = 0;
-
-double x_vel_old    = 0;
-double x_backlash   = 5;
 
 // Dlopen ..
 int rtapi_app_main(void) {
