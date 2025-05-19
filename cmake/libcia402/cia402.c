@@ -120,11 +120,11 @@ joint_data_t *JD;
 
 /* module information */
 MODULE_AUTHOR("Michel Wijnja");
-MODULE_DESCRIPTION("Halmodule cia402");
+MODULE_DESCRIPTION("Halmodule ethercat cia402");
 MODULE_LICENSE("GPL");
 
-static int comp_idx;    // Component ID
-static int count;       // provision for testing use of module parameters:
+static int comp_idx;    // Component ID.
+static int count;       // How much servo's to use.
 RTAPI_MP_INT(count, "number of servo drives");
 
 // Constants
@@ -139,10 +139,9 @@ static void read_all();
 static void write_all();
 static int setup_pins(int count);
 
+// initialize variables
 void init_vars(){
-
     for(int i=0; i<count; i++){
-        // initialize variables
         JD[i].pos_scale = 1.0;
         JD[i].pos_scale_old = JD[i].pos_scale + 1.0;
         JD[i].pos_scale_rcpt = 1.0;
@@ -154,8 +153,8 @@ void init_vars(){
     }
 }
 
+// check for change in scale value
 void check_scales(hal_float_t *scale, float *scale_old, double *scale_rcpt) {
-    // check for change in scale value
     if (*scale != *scale_old) {
         // scale value has changed, test and update it
         if ((*scale < 1e-20) && (*scale > -1e-20)) {
@@ -171,10 +170,7 @@ void check_scales(hal_float_t *scale, float *scale_old, double *scale_rcpt) {
 
 // Dlopen ..
 int rtapi_app_main(void) {
-
-    rtapi_print_msg(RTAPI_MSG_ERR,
-                    "count: %d\n", count);
-
+    // rtapi_print_msg(RTAPI_MSG_ERR, "count: %d\n", count);
     int r = 0;
     comp_idx = hal_init("cia402");
     if(comp_idx < 0) return comp_idx;
@@ -189,17 +185,14 @@ int rtapi_app_main(void) {
     } else {
         hal_ready(comp_idx);
     }
-
     init_vars();
-
     return 0;
 }
 
+// Exit.
 void rtapi_app_exit(void){
     hal_exit(comp_idx);
 }
-
-double hartbeat = 0;
 
 // Update from servo-cycle.
 static void read_all(){
@@ -257,9 +250,7 @@ static void read_all(){
 }
 
 static void write_all(){
-
     int enable_edge;
-
     for(int i=0; i<count; i++){
 
         // Init opmode
