@@ -62,7 +62,6 @@ void zero_tap_struct(struct tap_struct tap){
     tap.rev_stop_dist=0;
 }
 
-
 struct vector *vector_ptr;
 struct filletizer *filletizer_ptr;
 struct motionizer *motionizer_ptr;

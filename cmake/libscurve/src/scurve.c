@@ -58,6 +58,8 @@ inline void scurve_reset_data(struct scurve_data *data) {
     data->tarvel = 0;
     data->tarpos = 0;
 
+    data->tarvel_max = 0;
+
     data->saved_acc = 0;
     data->saved_vel = 0;
     data->saved_pos = 0;
@@ -209,6 +211,8 @@ inline void scurve_set_target_state(struct scurve_data *data,
     data->tarpos = endpos;
     data->pausing = pausing;
 
+    data->tarvel_max = endvel;
+
     // Normal scenario.
     if (data->curpos <= data->tarpos) {
         data->direction = FORWARD_DIRECTION;
@@ -302,7 +306,7 @@ inline int scurve_update(struct scurve_data *data) {
 
     // Lower speed to user velocity max, stop to tarvel.
     if(fabs(data->curvel)>fabs(data->maxvel)){
-        data->tarvel=data->maxvel;
+        data->tarvel=fmin(data->tarvel_max, data->maxvel);
         scurve_solver_build_stop_curve(data);
         scurve_solver_update(data);
         // printf("lowering speed to velmax. curvel: %f maxvel: %f \n", data->curvel, data->maxvel);
@@ -334,7 +338,6 @@ inline int scurve_update(struct scurve_data *data) {
 
     // Stop using endvel > 0.
     if(data->pd.need_stop==1 && data->tarvel>tollerance){
-
         scurve_solver_build_stop_curve(data);
         scurve_solver_update(data);
 

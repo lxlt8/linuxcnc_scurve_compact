@@ -86,7 +86,6 @@ int tpCreate(TP_STRUCT * const tp, int _queueSize,int id){
 
     // For sure.
     zero_emc_pose(&tp->currentPos);
-
     // Is zero at startup.
     // printf("aLimit: %f \n",tp->aLimit);
     // printf("aMaxCartesian: %f \n",tp->aMaxCartesian);
@@ -880,13 +879,34 @@ int tpRunCycle(TP_STRUCT * const tp, long period){
 
     tp->done=1; // Circulair buffer recieves new segments based on the tcqFull function.
 
+    if(tp->aborting){
+        if(fabs(sc_data.curvel)<1e-6){
+            tp->aborting=0;     // Not used.
+            vector_clear(vector_ptr);
+            path_reset(&path);
+            scurve_reset_data(&sc_data);
+            path.traject_finished=1;
+            tpSetNextMotion(tp,&path);
+            tpTrajectFinished(tp,&path);        // Check traject is finished.
+
+            tp->goalPos=tp->currentPos;
+            emcmotStatus->carte_pos_cmd=tp->currentPos;
+            emcmotStatus->current_vel = 0;
+            emcmotStatus->distance_to_go = 0;
+            zero_emc_pose(&emcmotStatus->dtg);
+            tp->aborting=0;     // Not used.
+            tp->pausing=0;
+        }
+        // printf("sc_data.curvel: %f \n",sc_data.curvel);
+    }
+
     if(tap.tapping){                    // Tapping cycle active.
         return tpTapCycle(tp);          // Perform tap cycle.
     }
 
-    if(emcmotStatus->net_feed_scale==0){        // Halt. Motion pause request from programs like plasmac.
-        return 0;                               // External offsets still active to perform probing etc.
-    }
+    //if(emcmotStatus->net_feed_scale==0){        // Halt. Motion pause request from programs like plasmac.
+    //    return 0;                               // External offsets still active to perform probing etc.
+    //}
 
     if(path.enable_keyboard_jog==1){            // Enable jogging in pause state.
         if(tpUpdateKeyPressJog(tp,&path)){         // Update keyboard inputs for jog in pause state.
@@ -952,6 +972,22 @@ int tpClear(TP_STRUCT * const tp){
         motionizer_remove_ptr(motionizer_ptr);
     */
     // printf("tpClear. \n");
+
+    //clear very thing for emergncy
+    vector_clear(vector_ptr);
+    path_reset(&path);
+    scurve_reset_data(&sc_data);
+    path.traject_finished=1;
+    tpSetNextMotion(tp,&path);
+    tpTrajectFinished(tp,&path);        // Check traject is finished.
+
+    tp->goalPos=tp->currentPos;
+    emcmotStatus->carte_pos_cmd=tp->currentPos;
+    emcmotStatus->current_vel = 0;
+    emcmotStatus->distance_to_go = 0;
+    zero_emc_pose(&emcmotStatus->dtg);
+    tp->aborting=0;     // Not used.
+    tp->pausing=0;
 
     keyboard_cleanup(&path);
 
@@ -1090,6 +1126,9 @@ int tpSetSpindleSync(TP_STRUCT * const tp, int spindle, double sync, int mode){
 
 // Pause button pressed.
 int tpPause(TP_STRUCT * const tp){
+    if (0 == tp) {
+        return TP_ERR_FAIL;
+    }
 
     tp->pausing=1;
     return 0;
@@ -1097,23 +1136,27 @@ int tpPause(TP_STRUCT * const tp){
 
 // Resume button pressed.
 int tpResume(TP_STRUCT * const tp){
+    if (0 == tp) {
+        return TP_ERR_FAIL;
+    }
 
+    if(tp->aborting) return 0;
     tp->pausing=0;
     return 0;
 }
 
 // Stop button pressed.
 int tpAbort(TP_STRUCT * const tp){
+    if (0 == tp) {
+        return TP_ERR_FAIL;
+    }
 
-    tp->pausing=0;      // Reset pause.
-    // tp->aborting=1;     // Not used.
-
-    // Remove all segments.
-    vector_clear(vector_ptr);
-    scurve_reset_data(&sc_data);
-    path_reset(&path);
-
-    printf("tpAbort. \n");
+    if (!tp->aborting) {
+        /* const to abort, signal a pause and set our abort flag */
+        tpPause(tp);
+        tp->aborting = 1;
+        printf("tpAbort. \n");
+    }
 
     return 0;
 }

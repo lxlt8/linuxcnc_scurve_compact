@@ -1,7 +1,15 @@
 #!/usr/bin/bash
 
-cd ../../scripts/ && . ./rip-environment
+# Build & install project.
+mkdir -p build
+cd build
+cmake ..
+make
+make install
+cd ..
 
+# Start linuxcnc environment.
+cd ../../scripts/ && . ./rip-environment
 cd ../bin
 
 halcmd stop

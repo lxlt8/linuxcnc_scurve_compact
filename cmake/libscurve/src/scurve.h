@@ -62,13 +62,14 @@ struct scurve_data {
     double taracc;
     double tarvel;
     double tarpos;
+    double tarvel_max;
 
     // States.
     enum scurve_direction_mode direction;
     enum scurve_direction_mode int_direction;   // Internal run direction.
 
     // Commands.
-    int pausing;      
+    int pausing;
 
     // Internals.
     double incpos;              // Positive increment position for each cycle.

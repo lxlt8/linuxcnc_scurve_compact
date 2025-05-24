@@ -199,7 +199,7 @@ static void zero_state_tag(struct state_tag_t* tag) {
     tag->packed_flags = 0;
 
     // Zero the filename (up to 256 characters)
-    memset(tag->filename, 0, sizeof(tag->filename));
+    // memset(tag->filename, 0, sizeof(tag->filename));
 }
 
 // Function to zero out all coordinates in the segment
