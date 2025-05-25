@@ -44,6 +44,8 @@ bit_data_t
 *hal_jog_y_min,
 *hal_jog_z_plus,
 *hal_jog_z_min,
+*hal_enable_feed_scale_zero,    // Enable feed scale zero. Used by motion pause request from programs like plasmac.
+                                // External offsets still active to perform probing etc.
 *hal_enable_keyboard_jog,       // Enable keyboard jog. Hal jog enabled by default.
 *hal_reset_max_cycle_time,      // Reset max cycle time extrema to zero.
 *hal_reset_acc_extrema;         // Reset acceleration extrema to zero.
@@ -53,6 +55,7 @@ float_data_t
 *hal_tp_curacc,                 // Current acceleration of motion. mm/s^2
 *hal_tp_curpos,                 // Current position in mm.
 *hal_tp_tarpos,                 // Target position in mm.
+*hal_tp_endvel,                 // Target velocity of motion. mm/s
 *hal_index_length,              // Current active segment length.
 *hal_index_progress,            // Current active segment progress 0-1
 *hal_rapid_override,            // Current rapid override in %, for G0 moves.
@@ -104,6 +107,9 @@ static inline void setup_hal_pins(int tpmod_id,
                                   struct path_data *path){
 
     // Hal pins.
+    hal_enable_feed_scale_zero = (bit_data_t*)hal_malloc(sizeof(bit_data_t));
+    hal_pin_bit_new("tpmod.hal_enable_feed_scale_zero",HAL_IN,&(hal_enable_feed_scale_zero->Pin),tpmod_id);
+
     hal_enable_keyboard_jog = (bit_data_t*)hal_malloc(sizeof(bit_data_t));
     hal_pin_bit_new("tpmod.hal_enable_keyboard_jog",HAL_IN,&(hal_enable_keyboard_jog->Pin),tpmod_id);
 
@@ -158,6 +164,9 @@ static inline void setup_hal_pins(int tpmod_id,
 
     hal_tp_tarpos = (float_data_t*)hal_malloc(sizeof(float_data_t));
     hal_pin_float_new("tpmod.hal_tp_tarpos",HAL_OUT,&(hal_tp_tarpos->Pin),tpmod_id);
+
+    hal_tp_endvel = (float_data_t*)hal_malloc(sizeof(float_data_t));
+    hal_pin_float_new("tpmod.hal_tp_endvel",HAL_OUT,&(hal_tp_endvel->Pin),tpmod_id);
 
     hal_index_length = (float_data_t*)hal_malloc(sizeof(float_data_t));
     hal_pin_float_new("tpmod.hal_index_length",HAL_OUT,&(hal_index_length->Pin),tpmod_id);
@@ -257,6 +266,7 @@ static inline void tpUpdateHal(TP_STRUCT * const tp,
     *hal_tp_curacc->Pin=path->curacc;
     *hal_tp_curpos->Pin=path->curpos;
     *hal_tp_tarpos->Pin=path->tarpos;
+    *hal_tp_endvel->Pin=path->endvel;
     *hal_feed_override->Pin=emc_status->feed_scale;
     *hal_rapid_override->Pin=emc_status->rapid_scale;
     *hal_max_vel->Pin=path->maxvel;

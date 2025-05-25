@@ -1,4 +1,4 @@
-# Sat May 24 11:40:29 CEST 2025
+# Sun May 25 12:34:29 CEST 2025
 #
 # This file:    ./axis_scurve_9_mm_cmds.hal
 # Created by:   /home/user/linuxcnc_distro_files/linuxcnc/lib/hallib/basic_sim.tcl
@@ -1005,6 +1005,7 @@ setp spindle.0.amp-fault-in         FALSE
 setp spindle.0.inhibit              FALSE
 setp spindle.0.orient-fault         0
 setp spindle_mass.load              FALSE
+setp tpmod.hal_enable_feed_scale_zero FALSE
 setp tpmod.hal_enable_keyboard_jog  FALSE
 setp tpmod.hal_jog_x_min            FALSE
 setp tpmod.hal_jog_x_plus           FALSE

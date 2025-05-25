@@ -53,6 +53,7 @@ path: ~/linuxcnc/cmake/libplanner/vector.h
 ## HAL Pins & Parameters
 
 ### `bit_data_t`
+- `hal_enable_feed_scale_zero`: Enable feed scale zero. Used by motion pause request from programs like plasmac. External offsets still active to perform probing etc.
 - `hal_enable_keyboard_jog`: Enable keyboard jog when program is in pause. 
 - `hal_jog_x_plus`: Jog x plus.
 - `hal_jog_x_min`: Jog x min.
@@ -74,6 +75,7 @@ path: ~/linuxcnc/cmake/libplanner/vector.h
 - `hal_tp_curacc`: Current acceleration of motion (mm/s²).
 - `hal_tp_curpos`: Current position (mm).
 - `hal_tp_tarpos`: Target position (mm).
+- `hal_tp_tarvel`: Target velocity of motion (mm/s).
 - `hal_index_length`: Current active segment length.
 - `hal_index_progress`: Current active segment progress (0-1).
 - `hal_rapid_override`: Current rapid override (%) for G0 moves.

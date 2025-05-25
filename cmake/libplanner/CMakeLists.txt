@@ -56,6 +56,8 @@ add_library(${PROJECT} SHARED
     ${SRC_DIR}/../../src/libnml/posemath/_posemath.c
     ${SRC_DIR}/../libscurve/src/scurve.h
     ${SRC_DIR}/../libscurve/src/scurve.c
+    ${SRC_DIR}/../libclothoid3d/src/math/geometry_math.h
+    ${SRC_DIR}/../libclothoid3d/src/math/vector_math.h
     ${SRC_DIR}/feed.h
     ${SRC_DIR}/feed.c
     ${SRC_DIR}/arc.h

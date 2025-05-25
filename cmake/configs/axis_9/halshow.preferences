@@ -1,6 +1,6 @@
 # Halshow settings
 # This file is generated automatically.
-wm geometry . 748x744+2739+163
+wm geometry . 748x744+2863+103
 placeFrames 0.3997093023255814
 set ::ratio 0.3997093023255814
 set ::old_w_leftf 160
@@ -14,6 +14,11 @@ set ::watchlist {
     pin+tpmod.hal_buffer_overflow
     param+tpmod.hal_max_jerk
     pin+tpmod.hal_reset_acc_extrema
+    pin+tpmod.hal_enable_feed_scale_zero
+    pin+tpmod.hal_tp_endvel
+    pin+tpmod.hal_ringbuffer_index
+    pin+tpmod.hal_push_counter
+    pin+tpmod.hal_index_moton_type
 }
 set ::workmode watchhal
 set ::watchInterval 100

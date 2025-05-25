@@ -782,6 +782,13 @@ void tpUpdateEndvel(TP_STRUCT * const tp,
 
     // Apply adaptive feed ratio. -1, 0, 1.
     path->endvel = fabs( ( *emcmot_hal_data->adaptive_feed) * path->endvel );
+
+    // Test colinear behaviour. This endvel seems ok.
+    if(time_count>100 && debug_look_ahead){
+        // printf("endvel: %f \n",path->endvel);
+        // printf("curvel: %f \n",path->curvel);
+        // printf("maxvel: %f \n",path->maxvel);
+    }
 }
 
 // Conditions to calculate the max velocity, given the segment index nr.
@@ -879,37 +886,16 @@ int tpRunCycle(TP_STRUCT * const tp, long period){
 
     tp->done=1; // Circulair buffer recieves new segments based on the tcqFull function.
 
-    if(tp->aborting){
-        if(fabs(sc_data.curvel)<1e-6){
-            tp->aborting=0;     // Not used.
-            vector_clear(vector_ptr);
-            path_reset(&path);
-            scurve_reset_data(&sc_data);
-            path.traject_finished=1;
-            tpSetNextMotion(tp,&path);
-            tpTrajectFinished(tp,&path);        // Check traject is finished.
-
-            tp->goalPos=tp->currentPos;
-            emcmotStatus->carte_pos_cmd=tp->currentPos;
-            emcmotStatus->current_vel = 0;
-            emcmotStatus->distance_to_go = 0;
-            zero_emc_pose(&emcmotStatus->dtg);
-            tp->aborting=0;     // Not used.
-            tp->pausing=0;
-        }
-        // printf("sc_data.curvel: %f \n",sc_data.curvel);
-    }
-
     if(tap.tapping){                    // Tapping cycle active.
         return tpTapCycle(tp);          // Perform tap cycle.
     }
 
-    //if(emcmotStatus->net_feed_scale==0){        // Halt. Motion pause request from programs like plasmac.
-    //    return 0;                               // External offsets still active to perform probing etc.
-    //}
+    if(emcmotStatus->net_feed_scale==0 && *hal_enable_feed_scale_zero->Pin){    // Halt. Motion pause request from programs like plasmac.
+        return 0;                                                               // External offsets still active to perform probing etc.
+    }
 
     if(path.enable_keyboard_jog==1){            // Enable jogging in pause state.
-        if(tpUpdateKeyPressJog(tp,&path)){         // Update keyboard inputs for jog in pause state.
+        if(tpUpdateKeyPressJog(tp,&path)){      // Update keyboard inputs for jog in pause state.
             return 0;
         }
     }
@@ -1037,7 +1023,9 @@ int tpSetAmax(TP_STRUCT * const tp, double aMax){
         return -1;
     }
 
-    aMax *= 0.5;
+    // Experimental, but does not align with calculating endvel
+    // using trapezium method.
+    // aMax *= 0.5;
 
     printf("tpAmax, INI MAX_LINEAR_ACCELERATION: %f \n",aMax);
     tp->aMax=aMax;
@@ -1140,7 +1128,7 @@ int tpResume(TP_STRUCT * const tp){
         return TP_ERR_FAIL;
     }
 
-    if(tp->aborting) return 0;
+    // if(tp->aborting) return 0;
     tp->pausing=0;
     return 0;
 }
@@ -1151,12 +1139,19 @@ int tpAbort(TP_STRUCT * const tp){
         return TP_ERR_FAIL;
     }
 
-    if (!tp->aborting) {
-        /* const to abort, signal a pause and set our abort flag */
-        tpPause(tp);
-        tp->aborting = 1;
-        printf("tpAbort. \n");
-    }
+    // Emergency stop, stop motors. Don't use a deceleration period.
+    vector_clear(vector_ptr);
+    path_reset(&path);
+    scurve_reset_data(&sc_data);
+    path.traject_finished=1;
+    tpSetNextMotion(tp,&path);
+    tpTrajectFinished(tp,&path);        // Check traject is finished.
+
+    tp->goalPos=tp->currentPos;
+    emcmotStatus->carte_pos_cmd=tp->currentPos;
+    emcmotStatus->current_vel = 0;
+    emcmotStatus->distance_to_go = 0;
+    zero_emc_pose(&emcmotStatus->dtg);
 
     return 0;
 }

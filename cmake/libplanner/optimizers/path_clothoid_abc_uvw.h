@@ -26,6 +26,51 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// Function to determine if to lines are in opposite direction. Motion has to stop. No fillet.
+int opposite_line_direction(const struct emcmot_segment *s0, const struct emcmot_segment *s2){
+
+    if(s0->canon_motion_type==2 /* linear */ && s2->canon_motion_type==2 /* linear */ ){
+
+        // Check for colinear and opposite direction:
+
+        double vector_s0[3];    // 3d Vector s0.
+        double s0_p1[3];        // Startpoint s0.
+        double s0_p2[3];        // Endpoint s0.
+
+        s0_p1[0] = s0->start.tran.x;
+        s0_p1[1] = s0->start.tran.y;
+        s0_p1[2] = s0->start.tran.z;
+
+        s0_p2[0] = s0->end.tran.x;
+        s0_p2[1] = s0->end.tran.y;
+        s0_p2[2] = s0->end.tran.z;
+
+
+        double vector_s2[3];    // 3d Vector s2.
+        double s2_p1[3];        // Startpoint s2.
+        double s2_p2[3];        // Endpoint s2.
+
+        s2_p1[0] = s2->start.tran.x;
+        s2_p1[1] = s2->start.tran.y;
+        s2_p1[2] = s2->start.tran.z;
+
+        s2_p2[0] = s2->end.tran.x;
+        s2_p2[1] = s2->end.tran.y;
+        s2_p2[2] = s2->end.tran.z;
+
+        unit_vector(s0_p1, s0_p2, vector_s0);
+        unit_vector(s2_p1, s2_p2, vector_s2);
+
+        // If dot product -1
+        double result = dot_product(vector_s0, vector_s2);
+        if(fabs(result - (-1.0)) < 1e-8 ){
+            printf("lines are colinear and opposite direction. \n");
+            return 1;
+        }
+    }
+    return 0;
+}
+
 /* Add segments to buffer. Add clothoid fillets given the max deviation.
  *
  */
@@ -36,6 +81,14 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
 
     struct emcmot_segment *s0;
     struct emcmot_segment s1;
+
+    // Check and set deviations. G64 P[..]
+    if(s2.canon_motion_type==1 /* rapid */){
+        //s2.tag.fields_float[3] = 0.0;
+    }
+    if(s2.canon_motion_type==4 /* rigid tap */ || s2.canon_motion_type==5 /* tool change */){
+        //s2.tag.fields_float[3] = 0.0;
+    }
 
     // Get the previous segment, if the buffer size>0.
     if(push_counter(vector_ptr)>0){
@@ -85,47 +138,24 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
         return 0;
     }
 
-    /* Conditions to not add a clothoid fillet, but only add the end segment :
-     *
-     *      - No path deviation is given. -> G64 P0.0
-     *      - Segment has no lenght for xyz.
-     *      - Motion is off type rigid tap.
-     *      - Motion is off type tool change.
-     *      - Motion is off type rapid.
-     */
-    if(     s2.subseg.length==0                 // Segment has no length.
-            || s2.tag.fields_float[3] < 1e-6    // No deviation.
-            || s2.canon_motion_type==4          // Rigid tap.
-            || s2.canon_motion_type==5          // Tool change.
-            || s2.canon_motion_type==1 ){       // Rapid.
+    // Conditions to not add a clothoid fillet, but only add the end segment :
+    if(     s0->canon_motion_type==1            // Previous motion is a rapid.
+            || opposite_line_direction(s0, &s2) // Motion is colinear and in opposite direction.
+                                                // Motion has to stop. Valid for canon motion type: 2.
+                                                // *** So colinear arc's in opposite direction are not coded yet.
+            || s2.subseg.length==0              // Segment has no length.
+            || s2.tag.fields_float[3] < 1e-6    // No path deviation is given. -> G64 P0.0
+            || s2.canon_motion_type==4          // Motion is off type: Rigid tap.
+            || s2.canon_motion_type==5          // Motion is off type: Tool change.
+            || s2.canon_motion_type==1          // Motion is off type: Rapid.
+            ){
         s2.trajectory_length_begin = s0->trajectory_length_end;
         s2.trajectory_length_end = s2.trajectory_length_begin + s2.length_netto;
         path->trajectory_length=s2.trajectory_length_end;
+
+        kmax_arc_line(&s2);
+        kmax_vel(&s2);
         init_feed(tp,&s2);
-
-        s2.a_start = s2.start.a;
-        s2.b_start = s2.start.b;
-        s2.c_start = s2.start.c;
-        s2.u_start = s2.start.u;
-        s2.v_start = s2.start.v;
-        s2.w_start = s2.start.w;
-
-        s2.a_end = s2.end.a;
-        s2.b_end = s2.end.b;
-        s2.c_end = s2.end.c;
-        s2.u_end = s2.end.u;
-        s2.v_end = s2.end.v;
-        s2.w_end = s2.end.w;
-
-        vector_push_back(ptr, s2);
-        return 0;
-    }
-
-    // No path deviation if previous motion is a rapid.
-    if( s0->canon_motion_type==1){
-        s2.trajectory_length_begin = s0->trajectory_length_end;
-        s2.trajectory_length_end = s2.trajectory_length_begin + s2.length_netto;
-        path->trajectory_length=s2.trajectory_length_end;
 
         s2.a_start = s2.start.a;
         s2.b_start = s2.start.b;
@@ -167,7 +197,7 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
     s1.id=s2.id;            // Copy gcode line id.
 
     if(s1.tag.fields_float[3]==0){
-        printf("deveation error. \n");
+        // printf("deveation error. \n");
     }
 
     // Start measuring time
@@ -238,6 +268,9 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
     kmax_arc_line(s0);
     s1.kmax = curvature_extrema(&s1.subseg);
     s1.radius = 1/s1.kmax;
+
+
+
     s1.canon_motion_type=0; // Set to 0 type so we can see the cloithoid in brown color in gui.
 
     kmax_arc_line(&s2);
@@ -246,6 +279,11 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
     kmax_vel(&s1);
     kmax_vel(&s2);
 
+    // When clothoid is a line, the kmax=0 and the radius is INF. The velocity value is ok.
+    // printf("kmax: %f \n",s1.kmax);
+    // printf("radius: %f \n",s1.radius);
+    // printf("vel %f \n",s1.vel);
+    // printf("length %f \n",s1.length_netto);
 
     // We need interpolation for abc, uvw axis to cover 100% of the trajectory.
     // After the fillets where made, we want to interpolate the abc, uvw axis also

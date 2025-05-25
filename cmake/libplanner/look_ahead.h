@@ -72,6 +72,14 @@ static inline void tpForwardSweep(struct vector *ptr,
 
         // Below overwites above if condition is met.
 
+        // No inbetween fillets. Stop each motion.
+        if( seg_next->canon_motion_type == 2 /* linear */ && seg->canon_motion_type == 2 /* linear */ ){
+            seg->vo = 0;
+            seg->ve = 0;
+            seg_next->vo = 0;
+            continue;
+        }
+
         // If next segment is rapid etc. End this motion with ve=0.
         // Set the next motion rapid etc. to vo=0, ve=0.
         if (    seg_next->subseg.length == 0 ||             // Motion has no length for xyz. Then abc uvw will have ve=0.

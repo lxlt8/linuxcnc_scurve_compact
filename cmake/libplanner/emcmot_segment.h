@@ -148,7 +148,7 @@ static void kmax_vel(struct emcmot_segment *seg){
 
     // If kmax is zero, the motion is a straight line.
     if (seg->kmax == 0) {
-        return;
+       return;
     }
 
     // Calculate maximum velocity based on maximum acceleration and kmax:
