@@ -45,7 +45,6 @@ int opposite_line_direction(const struct emcmot_segment *s0, const struct emcmot
         s0_p2[1] = s0->end.tran.y;
         s0_p2[2] = s0->end.tran.z;
 
-
         double vector_s2[3];    // 3d Vector s2.
         double s2_p1[3];        // Startpoint s2.
         double s2_p2[3];        // Endpoint s2.
@@ -64,7 +63,7 @@ int opposite_line_direction(const struct emcmot_segment *s0, const struct emcmot
         // If dot product -1
         double result = dot_product(vector_s0, vector_s2);
         if(fabs(result - (-1.0)) < 1e-8 ){
-            printf("lines are colinear and opposite direction. \n");
+            // printf("lines are colinear and opposite direction. \n");
             return 1;
         }
     }
@@ -117,7 +116,8 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
         s2.trajectory_length_end=s2.length_netto;
         path->trajectory_length=s2.trajectory_length_end;
         kmax_arc_line(&s2);
-        kmax_vel(&s2);
+        // kmax_vel(&s2);
+        kmax_vel_factor(&s2, path->inertia_factor);
         init_feed(tp,&s2);
 
         s2.a_start = s2.start.a;
@@ -141,8 +141,8 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
     // Conditions to not add a clothoid fillet, but only add the end segment :
     if(     s0->canon_motion_type==1            // Previous motion is a rapid.
             || opposite_line_direction(s0, &s2) // Motion is colinear and in opposite direction.
-                                                // Motion has to stop. Valid for canon motion type: 2.
-                                                // *** So colinear arc's in opposite direction are not coded yet.
+            // Motion has to stop. Valid for canon motion type: 2.
+            // *** So colinear arc's in opposite direction are not coded yet.
             || s2.subseg.length==0              // Segment has no length.
             || s2.tag.fields_float[3] < 1e-6    // No path deviation is given. -> G64 P0.0
             || s2.canon_motion_type==4          // Motion is off type: Rigid tap.
@@ -154,7 +154,8 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
         path->trajectory_length=s2.trajectory_length_end;
 
         kmax_arc_line(&s2);
-        kmax_vel(&s2);
+        // kmax_vel(&s2);
+        kmax_vel_factor(&s2, path->inertia_factor);
         init_feed(tp,&s2);
 
         s2.a_start = s2.start.a;
@@ -269,15 +270,13 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
     s1.kmax = curvature_extrema(&s1.subseg);
     s1.radius = 1/s1.kmax;
 
-
-
     s1.canon_motion_type=0; // Set to 0 type so we can see the cloithoid in brown color in gui.
 
     kmax_arc_line(&s2);
 
-    kmax_vel(s0);
-    kmax_vel(&s1);
-    kmax_vel(&s2);
+    kmax_vel_factor(s0, path->inertia_factor);
+    kmax_vel_factor(&s1, path->inertia_factor);
+    kmax_vel_factor(&s2, path->inertia_factor);
 
     // When clothoid is a line, the kmax=0 and the radius is INF. The velocity value is ok.
     // printf("kmax: %f \n",s1.kmax);

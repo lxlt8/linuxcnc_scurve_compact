@@ -42,6 +42,8 @@ struct path_data {
     int motion_increments_a_cycle;
     double trajectory_length;
 
+    double inertia_factor;
+
     // For reverse motion and ringbuffer we have to count
     // how many segments we can go back related to the ringbuffer.
     int reverse_motion_reset;
@@ -90,6 +92,8 @@ static void path_reset(struct path_data *path){
     path->motion_increments_a_cycle=0;
     path->buffer_overflow=0;
     path->use_real_deviation=0;
+
+    path->inertia_factor = 0;
 
     path->jog_x_plus=0;
     path->jog_x_min=0;

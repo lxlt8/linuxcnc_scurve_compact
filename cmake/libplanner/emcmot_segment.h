@@ -167,6 +167,37 @@ static void kmax_vel(struct emcmot_segment *seg){
     seg->vel = fmin(computed_maxvel, seg->vel);
 }
 
+// Function to calculate velocity based on curvature, including a programmed feed ratio that
+// wil drive up or down the velocity. Increasing or decreasing the machine inertia at runtime.
+static void kmax_vel_factor(struct emcmot_segment *seg, double factor){
+
+    // If kmax is zero, the motion is a straight line.
+    if (seg->kmax == 0) {
+       // printf("segment vel: %f \n",seg->vel * 60);
+       return;
+    }
+
+    // Calculate maximum velocity based on maximum acceleration and kmax:
+    // v_max = sqrt(maxacc / kmax)
+    // Explanation:
+    // - The centripetal acceleration required to maintain a curved path is given by the formula:
+    //   a_c = v^2 * kmax
+    // - Rearranging this gives us: v^2 = a_c / kmax
+    // - To find the maximum velocity before exceeding maxacc, we set a_c = maxacc:
+    //   v^2 = maxacc / kmax
+    // - Finally, taking the square root gives us the maximum velocity:
+    //   v_max = sqrt(maxacc / kmax)
+    double computed_maxvel = sqrt(seg->acc / seg->kmax); // mm/min.
+
+    // Minimum of the calculated max velocity and the input max velocity limit
+    double vel = fmin(computed_maxvel, seg->vel);
+
+    // Ratio 0-1
+    seg->vel = vel + (factor * (seg->vel - vel));
+
+    // printf("segment vel: %f \n",seg->vel * 60);
+}
+
 // Functions to zero a segment.
 static void zero_emc_pose(EmcPose *pos){
     pos->tran.x=0;

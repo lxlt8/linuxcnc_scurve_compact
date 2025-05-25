@@ -66,7 +66,8 @@ int tpCreate(TP_STRUCT * const tp, int _queueSize,int id){
 
     path.ringbuffer_index=0;
     path.motion_enable=1;
-    path.max_jerk=50;
+    path.max_jerk=250;
+    path.inertia_factor=0;
     path.cycle=0;
     path.use_real_deviation=0;
 

@@ -88,7 +88,8 @@ s32_data_t
 *hal_use_real_deviation;        // Use the clothoid deviation fit method, or use a fast trim deviation method.
 
 param_float_data_t
-*hal_max_jerk;                  // Scurve max jerk. Edit value when motion is not active.
+*hal_max_jerk,                  // Scurve max jerk. Edit value when motion is not active.
+*hal_inertia_factor;                // Use programmed feed ratio 0-1. 0 = Use 100% curvature for feed, 1 = Use 100% programmed feed.
 
 // Set hal startup values.
 static inline void set_hal_path_values(struct path_data *path){
@@ -100,6 +101,9 @@ static inline void set_hal_path_values(struct path_data *path){
 
     // For pins use at front : *
     *hal_use_real_deviation->Pin=path->use_real_deviation;
+
+    // Use based on curvature, or programmed feed. Factor 0-1
+    hal_inertia_factor->Pin=path->inertia_factor;
 }
 
 // Setup hal pins, no safety checks are done here. Any typo's will punish you at runtime.
@@ -202,6 +206,9 @@ static inline void setup_hal_pins(int tpmod_id,
     hal_max_jerk = (param_float_data_t*)hal_malloc(sizeof(param_float_data_t));
     hal_param_float_new("tpmod.hal_max_jerk",HAL_RW,&(hal_max_jerk->Pin),tpmod_id);
 
+    hal_inertia_factor = (param_float_data_t*)hal_malloc(sizeof(param_float_data_t));
+    hal_param_float_new("tpmod.hal_inertia_factor",HAL_RW,&(hal_inertia_factor->Pin),tpmod_id);
+
     hal_ring_buffer_index = (s32_data_t*)hal_malloc(sizeof(s32_data_t));
     hal_pin_s32_new("tpmod.hal_ringbuffer_index",HAL_OUT,&(hal_ring_buffer_index->Pin),tpmod_id);
 
@@ -258,6 +265,7 @@ static inline void tpUpdateHal(TP_STRUCT * const tp,
     // Changing the jerk at runtime is allowed.
     path->max_jerk=hal_max_jerk->Pin;
     path->max_jerk=fmax(path->max_jerk,1); // Lower limit.
+    path->inertia_factor=hal_inertia_factor->Pin;
 
     path->use_real_deviation = *hal_use_real_deviation->Pin;
 

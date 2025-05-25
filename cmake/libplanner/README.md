@@ -103,6 +103,11 @@ path: ~/linuxcnc/cmake/libplanner/vector.h
 
 ### `param_float_data_t`
 - `hal_max_jerk`: S-curve maximum jerk (edit when motion is not active).
+- `hal_inertia_factor`: Use feed based on curvature or use programmed feed, factor: 0-1
+                        0.5 = 50% of the feed is based on curvature, 50% is based on programmed feed.
+                        Note:
+                        If interia factor is high and the jerk max is low. Motion's end can be abrupted.
+                        For now this has to be tuned.
 
 ---
 
