@@ -294,7 +294,7 @@ int tpAddRigidTap(TP_STRUCT * const tp,
 // Create a empty queue. Not used.
 int tpInit(TP_STRUCT * const tp)
 {
-    printf("tpInit. \n");
+    // printf("tpInit. \n");
     return 0;
 }
 
@@ -634,6 +634,8 @@ void tpUpdateGui(TP_STRUCT * const tp,
 
     // Set a motion type so that : control.c Line 1867 motion.feed-... is not flippering
     // and has a motion type all the time.
+    // Note that the motion types in motion_types.h not correspondent with canon motion types.
+    // This need a fix?
     emcmotStatus->motionType = EMC_MOTION_TYPE_FEED;
 
     // Update GUI.
@@ -783,13 +785,6 @@ void tpUpdateEndvel(TP_STRUCT * const tp,
 
     // Apply adaptive feed ratio. -1, 0, 1.
     path->endvel = fabs( ( *emcmot_hal_data->adaptive_feed) * path->endvel );
-
-    // Test colinear behaviour. This endvel seems ok.
-    if(time_count>100 && debug_look_ahead){
-        // printf("endvel: %f \n",path->endvel);
-        // printf("curvel: %f \n",path->curvel);
-        // printf("maxvel: %f \n",path->maxvel);
-    }
 }
 
 // Conditions to calculate the max velocity, given the segment index nr.
@@ -801,7 +796,8 @@ void tpUpdateMaxVel(TP_STRUCT * const tp,
         return;
     }
 
-    struct emcmot_segment *seg=vector_at(vector_ptr, path->ringbuffer_index);
+    // Pointer to current active segment. Const means the segment is non-editable.
+    const struct emcmot_segment *seg=vector_at(vector_ptr, path->ringbuffer_index);
 
     path->maxvel=vector_at(vector_ptr, path->ringbuffer_index)->vel;
 
@@ -816,9 +812,10 @@ void tpUpdateMaxVel(TP_STRUCT * const tp,
     path->maxvel=fmin(path->maxvel, tp->vLimit);
 
     // Apply adaptive feed ratio. -1, 0, 1.
-    path->maxvel = fabs( ( *emcmot_hal_data->adaptive_feed) * path->maxvel );
+    path->maxvel=fabs((*emcmot_hal_data->adaptive_feed) * path->maxvel);
 }
 
+// Update the scurve cycle. Given current state, target state.
 inline void tpUpdateScurveCycle(TP_STRUCT * const tp,
                                 struct path_data *path){
 
@@ -914,7 +911,7 @@ int tpRunCycle(TP_STRUCT * const tp, long period){
     // Segment completed, still within the trajectory.
     if(path.scurve_return==RETURN_FINISHED){
         tpSetNextMotion(tp,&path);
-        tpTrajectFinished(tp,&path);        // Check traject is finished.
+        tpTrajectFinished(tp,&path);    // Check traject is finished.
     }
 
     path.cycle++;                       // Planner cycle monitoring.
@@ -952,20 +949,10 @@ int tpRunCycle(TP_STRUCT * const tp, long period){
 // Closing linux cnc. Free memory.
 int tpClear(TP_STRUCT * const tp){
 
-    /*  This triggers a signal 11, dumping core:
-        vector_remove_ptr(vector_ptr);
-        filletizer_remove_ptr(filletizer_ptr);
-        scurve_remove_ptr(scurve_ptr);
-        motionizer_remove_ptr(motionizer_ptr);
-    */
-    // printf("tpClear. \n");
-
-    //clear very thing for emergncy
     vector_clear(vector_ptr);
     path_reset(&path);
     scurve_reset_data(&sc_data);
     path.traject_finished=1;
-    tpSetNextMotion(tp,&path);
     tpTrajectFinished(tp,&path);        // Check traject is finished.
 
     tp->goalPos=tp->currentPos;
@@ -973,11 +960,12 @@ int tpClear(TP_STRUCT * const tp){
     emcmotStatus->current_vel = 0;
     emcmotStatus->distance_to_go = 0;
     zero_emc_pose(&emcmotStatus->dtg);
-    tp->aborting=0;     // Not used.
+    tp->aborting=0;                     // Not used.
     tp->pausing=0;
 
-    keyboard_cleanup(&path);
+    keyboard_cleanup(&path);            // Jog in pause option.
 
+    // printf("tpClear. \n");
     return 0;
 }
 
@@ -986,9 +974,10 @@ int tpSetCycleTime(TP_STRUCT * const tp, double secs){
 
     if (!tp || secs <= 0.0) {
         return -1;
-    }
-    // printf("tpSetCycleTime. %f \n",secs);
+    } 
     tp->cycleTime = secs;
+
+    // printf("tpSetCycleTime. %f \n",secs);
     return 0;
 }
 
@@ -1025,10 +1014,10 @@ int tpSetAmax(TP_STRUCT * const tp, double aMax){
     }
 
     // Experimental, but does not align with calculating endvel
-    // using trapezium method.
+    // using trapezium method. Does not align with scurve abstract.
     // aMax *= 0.5;
 
-    printf("tpAmax, INI MAX_LINEAR_ACCELERATION: %f \n",aMax);
+    // printf("tpAmax, INI MAX_LINEAR_ACCELERATION: %f \n",aMax);
     tp->aMax=aMax;
     return 0;
 }
@@ -1087,13 +1076,6 @@ int tpGetPos(TP_STRUCT const * const tp, EmcPose * const pos){
     return 0;
 }
 
-// Not used.
-int tpErrorCheck(TP_STRUCT const * const tp){
-
-    if(!tp){return -1;}
-    return 0;
-}
-
 // This function is called just befure tpAddRigidTap to set pitch & spindle_nr to
 // use with tapping cycle.
 int tpSetSpindleSync(TP_STRUCT * const tp, int spindle, double sync, int mode){
@@ -1145,7 +1127,6 @@ int tpAbort(TP_STRUCT * const tp){
     path_reset(&path);
     scurve_reset_data(&sc_data);
     path.traject_finished=1;
-    tpSetNextMotion(tp,&path);
     tpTrajectFinished(tp,&path);        // Check traject is finished.
 
     tp->goalPos=tp->currentPos;
