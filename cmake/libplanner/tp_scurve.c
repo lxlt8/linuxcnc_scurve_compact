@@ -985,7 +985,7 @@ int tpClear(TP_STRUCT * const tp){
     tpUpdateGui(tp,&path);              // Update gui positions.
     tpUpdateHal(tp,&path,emcmotStatus); // Update hal pins.
 
-    printf("tpClear. \n");
+    // printf("tpClear. \n");
     return 0;
 }
 
