@@ -14,7 +14,9 @@
 #include "emcmot_segment.h"
 #include "vector.h"
 #include "common.h"
+#include "scurve.h"
 
+// Trapezium motion profile.
 static inline double tpFinalVelocity(double vo, double maxvel, double maxacc, double length) {
 
     if(length<1e-20){ // Just return the input if no lenght.
@@ -23,7 +25,43 @@ static inline double tpFinalVelocity(double vo, double maxvel, double maxacc, do
 
     double ve_squared = vo * vo + 2 * maxacc * length;
     double ve = sqrt(ve_squared);
-    return fmin(ve, maxvel); // Limit by the max velocity (vm)
+
+    ve = fmin(ve, maxvel); // Limit by the max velocity (vm)
+    // printf("ve trapezium profile: %f \n",ve);
+    return ve;
+}
+
+// Scurve motion profile. Downside: Starts with acc = 0, ends with acc = 0.
+static inline double tpFinalVelocityScurve(double vo, double maxvel, double maxacc, double length, double max_jerk) {
+
+    if(length<1e-20){ // Just return the input if no lenght.
+        return vo;
+    }
+
+    // double ve_squared = vo * vo + 2 * maxacc * length;
+    // double ve = sqrt(ve_squared);
+
+    double ve = 0;
+    double time = 0;
+
+    // Setup a scurve
+    struct scurve_data data;
+    scurve_reset_data(&data);
+
+    scurve_init(&data,
+                max_jerk,
+                maxacc,
+                maxvel,
+                time);
+
+    scurve_solver_build_curve(&data);
+
+    data.interval_time_ms = scurve_time_all_periods(&data);
+    scurve_solver_update(&data);
+
+    ve = fmin(data.curvel, maxvel); // Limit by the max velocity (vm)
+    // printf("ve scurve profile: %f \n",ve);
+    return ve;
 }
 
 static inline void tpForwardSweep(struct vector *ptr,
@@ -56,12 +94,15 @@ static inline void tpForwardSweep(struct vector *ptr,
         // printf("seg id last: %d \n",seg_last->id);
 
         // Calculate final velocity ve. Given vo, vel, acc, length.
+        /*
         seg->ve = tpFinalVelocity(
                     seg->vo,
                     seg->vel,
                     seg->acc,
                     seg->length_netto
-                    );
+                    ); */
+
+        seg->ve = tpFinalVelocityScurve(seg->vo, seg->vel, seg->acc, seg->length_netto, path->max_jerk);
 
         // Limit ve to vm;
         seg->ve = fmax( seg->ve, seg->vel);
@@ -136,12 +177,14 @@ static inline void tpReverseSweep(struct vector *ptr,
         // printf("reverse seg id first: %d \n",seg_first->id);
 
         // Calculate final velocity.
-        double vo = tpFinalVelocity(
+        /* double vo = tpFinalVelocity(
                     seg->ve,
                     seg->vel,
                     seg->acc,
                     seg->length_netto
-                    );
+                    ); */
+
+         double vo = tpFinalVelocityScurve(seg->vo, seg->vel, seg->acc, seg->length_netto, path->max_jerk);
 
         // Limit vo to vm.
         vo = fmin(seg->vel, vo);

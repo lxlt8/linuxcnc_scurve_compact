@@ -130,7 +130,8 @@ path: ~/linuxcnc/cmake/libplanner/vector.h
 
 ## Todo
 
-- 
+- Reduce speed fluctuations by refining the function : tpFinalVelocity
+  wich now uses a trapezium model, needs to be a scurve model.
 
 ---
 
