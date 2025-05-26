@@ -884,6 +884,24 @@ int tpRunCycle(TP_STRUCT * const tp, long period){
 
     tp->done=1; // Circulair buffer recieves new segments based on the tcqFull function.
 
+    if(tp->aborting && abs(path.curvel)== 0){
+        // Emergency stop, stop motors. Don't use a deceleration period.
+        vector_clear(vector_ptr);
+        path_reset(&path);
+        scurve_reset_data(&sc_data);
+        path.traject_finished=1;
+        tpTrajectFinished(tp,&path);        // Check traject is finished.
+
+        tp->goalPos=tp->currentPos;
+        emcmotStatus->carte_pos_cmd=tp->currentPos;
+        emcmotStatus->current_vel = 0;
+        emcmotStatus->distance_to_go = 0;
+        zero_emc_pose(&emcmotStatus->dtg);
+
+        tp->aborting=0;
+        tp->pausing=0;
+    }
+
     if(tap.tapping){                    // Tapping cycle active.
         return tpTapCycle(tp);          // Perform tap cycle.
     }
@@ -947,14 +965,13 @@ int tpRunCycle(TP_STRUCT * const tp, long period){
 }
 
 // Closing linux cnc. Free memory.
+// tpDone & tpClear = Emergency stop request.
 int tpClear(TP_STRUCT * const tp){
 
     vector_clear(vector_ptr);
     path_reset(&path);
-    scurve_reset_data(&sc_data);
     path.traject_finished=1;
-    tpTrajectFinished(tp,&path);        // Check traject is finished.
-
+    scurve_reset_data(&sc_data);
     tp->goalPos=tp->currentPos;
     emcmotStatus->carte_pos_cmd=tp->currentPos;
     emcmotStatus->current_vel = 0;
@@ -965,7 +982,10 @@ int tpClear(TP_STRUCT * const tp){
 
     keyboard_cleanup(&path);            // Jog in pause option.
 
-    // printf("tpClear. \n");
+    tpUpdateGui(tp,&path);              // Update gui positions.
+    tpUpdateHal(tp,&path,emcmotStatus); // Update hal pins.
+
+    printf("tpClear. \n");
     return 0;
 }
 
@@ -1122,18 +1142,10 @@ int tpAbort(TP_STRUCT * const tp){
         return TP_ERR_FAIL;
     }
 
-    // Emergency stop, stop motors. Don't use a deceleration period.
-    vector_clear(vector_ptr);
-    path_reset(&path);
-    scurve_reset_data(&sc_data);
-    path.traject_finished=1;
-    tpTrajectFinished(tp,&path);        // Check traject is finished.
-
-    tp->goalPos=tp->currentPos;
-    emcmotStatus->carte_pos_cmd=tp->currentPos;
-    emcmotStatus->current_vel = 0;
-    emcmotStatus->distance_to_go = 0;
-    zero_emc_pose(&emcmotStatus->dtg);
+    if(!tp->aborting){
+        tpPause(tp);
+        tp->aborting = 1;
+    }
 
     return 0;
 }
