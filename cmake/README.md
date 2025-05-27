@@ -114,6 +114,7 @@ path: ~/linuxcnc/cmake/libplanner/vector.h
 - `hal_proportional_gain`: Determines how aggressively the follower corrects position errors. (edit when motion is not active).
    value=0, it's not active.
    Range 0 - 1000
+   Downside : Trajectory end position slighty off.
 - `hal_derative_gain`: Damps oscillations and smooths motion. (edit when motion is not active).
    Range 0 - 100
 

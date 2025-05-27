@@ -614,7 +614,7 @@ void tpUpdateGui(TP_STRUCT * const tp,
                     }
 
     EmcPose temp = tp->currentPos;
-    if(hal_proportional_gain->Pin > 0){
+    if(hal_proportional_gain->Pin > 0 && segment->tag.fields_float[3]>0){
 
         follower_update(&fl, tp->currentPos.tran.x, tp->currentPos.tran.y, tp->currentPos.tran.z,
                         tp->cycleTime,  // dt (1ms)

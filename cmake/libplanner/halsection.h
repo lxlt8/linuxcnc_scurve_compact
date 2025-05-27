@@ -110,8 +110,8 @@ static inline void set_hal_path_values(struct path_data *path){
     hal_inertia_factor->Pin=path->inertia_factor;
 
     // Tp follower.
-    hal_derative_gain->Pin = 50;
-    hal_proportional_gain->Pin = 800;
+    hal_derative_gain->Pin = 100;
+    hal_proportional_gain->Pin = 0;
 }
 
 // Setup hal pins, no safety checks are done here. Any typo's will punish you at runtime.
