@@ -1,4 +1,4 @@
-# Tue May 27 11:13:16 CEST 2025
+# Tue May 27 13:28:49 CEST 2025
 #
 # This file:    ./axis_scurve_9_mm_cmds.hal
 # Created by:   /home/user/linuxcnc_distro_files/linuxcnc/lib/hallib/basic_sim.tcl
@@ -191,8 +191,10 @@ setp sim_spindle.scale              0.01666667
 setp sim_spindle.tmax               0
 setp spindle_mass.gain              0.07
 setp spindle_mass.tmax              0
+setp tpmod.hal_derative_gain        50
 setp tpmod.hal_inertia_factor       0
 setp tpmod.hal_max_jerk             250
+setp tpmod.hal_proportional_gain    500
 # Note: ALL unconnected pins follow
 #       (includes pins using default with no explicit setp command)
 setp J0_pid.Dgain                   0

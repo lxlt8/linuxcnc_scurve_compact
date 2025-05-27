@@ -38,6 +38,7 @@ typedef struct { // Param int.
 } param_s32_data_t;
 
 bit_data_t
+*hal_following_error,           // Follower has exceeded the path deviation G64 P[.] value.
 *hal_jog_x_plus,                // Jog when program is in pause.
 *hal_jog_x_min,
 *hal_jog_y_plus,
@@ -51,6 +52,7 @@ bit_data_t
 *hal_reset_acc_extrema;         // Reset acceleration extrema to zero.
 
 float_data_t
+*hal_following_error_value,     // Actual following error value.
 *hal_tp_curvel,                 // Current velocity of motion. mm/s, gui display's: mm/min.
 *hal_tp_curacc,                 // Current acceleration of motion. mm/s^2
 *hal_tp_curpos,                 // Current position in mm.
@@ -88,8 +90,10 @@ s32_data_t
 *hal_use_real_deviation;        // Use the clothoid deviation fit method, or use a fast trim deviation method.
 
 param_float_data_t
+*hal_proportional_gain,         // Determines how aggressively the follower corrects position errors.
+*hal_derative_gain,             // Damps oscillations and smooths motion.
 *hal_max_jerk,                  // Scurve max jerk. Edit value when motion is not active.
-*hal_inertia_factor;                // Use programmed feed ratio 0-1. 0 = Use 100% curvature for feed, 1 = Use 100% programmed feed.
+*hal_inertia_factor;            // Use programmed feed ratio 0-1. 0 = Use 100% curvature for feed, 1 = Use 100% programmed feed.
 
 // Set hal startup values.
 static inline void set_hal_path_values(struct path_data *path){
@@ -104,6 +108,10 @@ static inline void set_hal_path_values(struct path_data *path){
 
     // Use based on curvature, or programmed feed. Factor 0-1
     hal_inertia_factor->Pin=path->inertia_factor;
+
+    // Tp follower.
+    hal_derative_gain->Pin = 50;
+    hal_proportional_gain->Pin = 800;
 }
 
 // Setup hal pins, no safety checks are done here. Any typo's will punish you at runtime.
@@ -137,6 +145,12 @@ static inline void setup_hal_pins(int tpmod_id,
 
     hal_reset_acc_extrema = (bit_data_t*)hal_malloc(sizeof(bit_data_t));
     hal_pin_bit_new("tpmod.hal_reset_acc_extrema",HAL_IN,&(hal_reset_acc_extrema->Pin),tpmod_id);
+
+    hal_following_error = (bit_data_t*)hal_malloc(sizeof(bit_data_t));
+    hal_pin_bit_new("tpmod.hal_following_error",HAL_OUT,&(hal_following_error->Pin),tpmod_id);
+
+    hal_following_error_value = (float_data_t*)hal_malloc(sizeof(float_data_t));
+    hal_pin_float_new("tpmod.hal_following_error_value",HAL_OUT,&(hal_following_error_value->Pin),tpmod_id);
 
     hal_acc_extrema = (float_data_t*)hal_malloc(sizeof(float_data_t));
     hal_pin_float_new("tpmod.hal_acc_extrema",HAL_OUT,&(hal_acc_extrema->Pin),tpmod_id);
@@ -203,6 +217,12 @@ static inline void setup_hal_pins(int tpmod_id,
     hal_pin_float_new("tpmod.hal_segment_ve",HAL_OUT,&(hal_segment_ve->Pin),tpmod_id);
 
     // Parameter pins. These are used to set values at runtime.
+    hal_proportional_gain = (param_float_data_t*)hal_malloc(sizeof(param_float_data_t));
+    hal_param_float_new("tpmod.hal_proportional_gain",HAL_RW,&(hal_proportional_gain->Pin),tpmod_id);
+
+    hal_derative_gain = (param_float_data_t*)hal_malloc(sizeof(param_float_data_t));
+    hal_param_float_new("tpmod.hal_derative_gain",HAL_RW,&(hal_derative_gain->Pin),tpmod_id);
+
     hal_max_jerk = (param_float_data_t*)hal_malloc(sizeof(param_float_data_t));
     hal_param_float_new("tpmod.hal_max_jerk",HAL_RW,&(hal_max_jerk->Pin),tpmod_id);
 
@@ -284,6 +304,8 @@ static inline void tpUpdateHal(TP_STRUCT * const tp,
     *hal_traject_buffer_dist->Pin=path->trajectory_length-path->curpos;
     *hal_segment_vm->Pin=path->maxvel;
     *hal_segment_ve->Pin=path->endvel;
+    *hal_following_error->Pin=path->following_error;
+    *hal_following_error_value->Pin=path->following_error_value;
 
     // Pin's to be monitored by halview.
     if(vector_size(vector_ptr)>0){

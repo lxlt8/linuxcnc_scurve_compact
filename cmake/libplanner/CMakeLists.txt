@@ -81,6 +81,7 @@ add_library(${PROJECT} SHARED
     ${SRC_DIR}/optimizers/path_clothoid_abc_uvw.h
     ${SRC_DIR}/look_ahead.h
     ${SRC_DIR}/keyboard.h
+    ${SRC_DIR}/follower.h
 )
 
 # Set the RPATH for runtime linking

@@ -28,6 +28,8 @@ struct path_data {
     int traject_finished;
     int buffer_overflow;
     int use_real_deviation;
+    int following_error;
+    double following_error_value;
 
     double curvel;
     double curacc;
@@ -93,6 +95,8 @@ static void path_reset(struct path_data *path){
     path->motion_increments_a_cycle=0;
     path->buffer_overflow=0;
     path->use_real_deviation=0;
+    path->following_error=0;
+    path->following_error_value=0;
 
     path->inertia_factor = 0;
 

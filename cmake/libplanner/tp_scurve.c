@@ -32,6 +32,7 @@
 #include "common.h"
 #include "module.h"
 #include "arc.h"
+#include "follower.h"
 
 // Clothoid includes.
 #include "fit.h"
@@ -49,6 +50,8 @@
 
 struct timespec start_0, end_0;
 struct timespec start_1, end_1;
+
+Follower fl;
 
 // Start the planner. Make connections to scurve lib etc.
 int tpCreate(TP_STRUCT * const tp, int _queueSize,int id){
@@ -591,6 +594,7 @@ void tpUpdateGui(TP_STRUCT * const tp,
     path->progress = fmin(path->progress,1);
 
     // Choose interpolation model.
+    // Calculate tp->currentPos.
     if(path->path_algo==file_path_standard){
         path_standard_interpolate(tp,path,segment);
     } else
@@ -608,6 +612,27 @@ void tpUpdateGui(TP_STRUCT * const tp,
                     } else {
                         printf("no interpolation model to update gui found! Abort. \n");
                     }
+
+    EmcPose temp = tp->currentPos;
+    if(hal_proportional_gain->Pin > 0){
+
+        follower_update(&fl, tp->currentPos.tran.x, tp->currentPos.tran.y, tp->currentPos.tran.z,
+                        tp->cycleTime,  // dt (1ms)
+                        hal_proportional_gain->Pin,  // k_p
+                        hal_derative_gain->Pin,   // k_d
+                        tp->aMax*2);  // a_max, scurve maxacc = 2 x amax
+
+        tp->currentPos.tran.x = fl.x.pos;
+        tp->currentPos.tran.y = fl.y.pos;
+        tp->currentPos.tran.z = fl.z.pos;
+    }
+
+    path->following_error_value = distance(tp->currentPos.tran, temp.tran);
+    if(path->following_error_value > segment->tag.fields_float[3]){
+        path->following_error=1;
+    } else {
+        path->following_error=0;
+    }
 
     /* // Update radius to path -> hal pin for plasma's
      * Canon motion type:
@@ -736,7 +761,7 @@ void tpUpdateTarpos(TP_STRUCT * const tp,
 }
 
 int time_count=0;
-int debug_look_ahead=1;
+int debug_look_ahead=0;
 
 void tpUpdateEndvel(TP_STRUCT * const tp,
                     struct path_data *path){
@@ -831,12 +856,17 @@ inline void tpUpdateScurveCycle(TP_STRUCT * const tp,
                 path->maxvel,
                 tp->cycleTime);
 
+    int pausing = tp->pausing;
+    if(path->following_error){
+        pausing = 1;
+    }
+
     // Update scurve cycle.
     scurve_set_target_state(&sc_data,
                             path->endvel,
                             path->endacc,
                             path->tarpos,
-                            tp->pausing);
+                            pausing);
 
     path->scurve_return=scurve_update(&sc_data);
 
@@ -994,7 +1024,7 @@ int tpSetCycleTime(TP_STRUCT * const tp, double secs){
 
     if (!tp || secs <= 0.0) {
         return -1;
-    } 
+    }
     tp->cycleTime = secs;
 
     // printf("tpSetCycleTime. %f \n",secs);
@@ -1083,6 +1113,8 @@ int tpSetPos(TP_STRUCT * const tp, EmcPose const * const pos){
 
     tp->currentPos=*pos;
     tp->goalPos=*pos;
+
+    follower_init(&fl, pos->tran.x, pos->tran.y, pos->tran.z);
     // printf("tpSetPos x: %f y: %f z: %f \n",pos->tran.x,pos->tran.y,pos->tran.z);
     return 0;
 }

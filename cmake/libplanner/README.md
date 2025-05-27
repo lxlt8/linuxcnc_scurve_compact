@@ -53,6 +53,7 @@ path: ~/linuxcnc/cmake/libplanner/vector.h
 ## HAL Pins & Parameters
 
 ### `bit_data_t`
+- `hal_following_error`: Status bit for following error.
 - `hal_enable_feed_scale_zero`: Enable feed scale zero. Used by motion pause request from programs like plasmac. External offsets still active to perform probing etc.
 - `hal_enable_keyboard_jog`: Enable keyboard jog when program is in pause. 
 - `hal_jog_x_plus`: Jog x plus.
@@ -108,6 +109,13 @@ path: ~/linuxcnc/cmake/libplanner/vector.h
                         Note:
                         If interia factor is high and the jerk max is low. Motion's end can be abrupted.
                         For now this has to be tuned.
+
+
+- `hal_proportional_gain`: Determines how aggressively the follower corrects position errors. (edit when motion is not active).
+   value=0, it's not active.
+   Range 0 - 1000
+- `hal_derative_gain`: Damps oscillations and smooths motion. (edit when motion is not active).
+   Range 0 - 100
 
 ---
 
@@ -235,7 +243,8 @@ MAX_LINEAR_ACCELERATION = 508
 
 ## Path Blending
 
-When using `G64 P[x] Q[x]`, the planner enables path blending and uses end velocities to achieve smooth motion. Always use `Q0.0` to prevent filtering out tiny segments:
+When using `G64 P[x] Q[x]`, the planner enables path blending and uses end velocities to achieve smooth motion. 
+Always use `Q0.0` to prevent filtering out tiny segments:
 
 ```bash
 G64 P0.1 Q0.0
@@ -246,6 +255,8 @@ Optionally, use `Q[x]` to filter out tiny segments:
 ```bash
 G64 P0.1 Q0.1
 ```
+
+When using G64 Q>0 the gcode output may be currupt and perform straight lines where filter is applied.
 
 ---
 
