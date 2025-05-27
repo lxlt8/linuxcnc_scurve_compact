@@ -78,6 +78,11 @@ static inline int path_clothoid_abc_uvw(TP_STRUCT * const tp,
                                         struct emcmot_segment s2,
                                         struct vector *ptr){
 
+    // Send a message to not use a G64 Q value if used.
+    if(s2.tag.fields_float[GM_FIELD_FLOAT_NAIVE_CAM_TOLERANCE]>0){
+        printf("Do not use a G64 Q>0 value. Set Q=0.0. Gcode output corrupt. \n");
+    }
+
     struct emcmot_segment *s0;
     struct emcmot_segment s1;
 

@@ -32,36 +32,35 @@ static inline double tpFinalVelocity(double vo, double maxvel, double maxacc, do
 }
 
 // Scurve motion profile. Downside: Starts with acc = 0, ends with acc = 0.
-static inline double tpFinalVelocityScurve(double vo, double maxvel, double maxacc, double length, double max_jerk) {
+static inline double tpFinalVelocityScurve(double vo, double maxvel, double maxacc, double length, double maxjerk) {
 
     if(length<1e-20){ // Just return the input if no lenght.
         return vo;
     }
 
-    // double ve_squared = vo * vo + 2 * maxacc * length;
-    // double ve = sqrt(ve_squared);
-
-    double ve = 0;
-    double time = 0;
-
-    // Setup a scurve
+    // Setup a scurve.
     struct scurve_data data;
+
+    // Zero all values.
     scurve_reset_data(&data);
 
-    scurve_init(&data,
-                max_jerk,
-                maxacc,
-                maxvel,
-                time);
+    // Set values for function scurve_solver_build_curve.
+    data.maxjerk = maxjerk;
+    data.maxacc = maxacc;
+    data.maxvel = maxvel;
+    data.vr = vo;
 
+    // Generate forward curve.
     scurve_solver_build_curve(&data);
 
+    // Total curve time.
     data.interval_time_ms = scurve_time_all_periods(&data);
+
+    // Update curve values to curve end.
     scurve_solver_update(&data);
 
-    ve = fmin(data.curvel, maxvel); // Limit by the max velocity (vm)
+    return fmin(data.curvel, maxvel); // Limit by the max velocity (vm)
     // printf("ve scurve profile: %f \n",ve);
-    return ve;
 }
 
 static inline void tpForwardSweep(struct vector *ptr,
@@ -184,7 +183,7 @@ static inline void tpReverseSweep(struct vector *ptr,
                     seg->length_netto
                     ); */
 
-         double vo = tpFinalVelocityScurve(seg->vo, seg->vel, seg->acc, seg->length_netto, path->max_jerk);
+        double vo = tpFinalVelocityScurve(seg->vo, seg->vel, seg->acc, seg->length_netto, path->max_jerk);
 
         // Limit vo to vm.
         vo = fmin(seg->vel, vo);

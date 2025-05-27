@@ -148,7 +148,7 @@ int tpAddLine(TP_STRUCT * const tp, EmcPose end, int canon_motion_type,
 
     // Toolchange motion type.
     if(canon_motion_type==4){
-        printf("ptAddLine, added motion type 4 Tool change. \n");
+        // printf("ptAddLine, added motion type 4 Tool change. \n");
     }
 
     s2.vel=vel;
@@ -736,7 +736,7 @@ void tpUpdateTarpos(TP_STRUCT * const tp,
 }
 
 int time_count=0;
-int debug_look_ahead=0;
+int debug_look_ahead=1;
 
 void tpUpdateEndvel(TP_STRUCT * const tp,
                     struct path_data *path){
@@ -989,7 +989,7 @@ int tpClear(TP_STRUCT * const tp){
     return 0;
 }
 
-// Set the cycletime. Not used.
+// Set the cycletime.
 int tpSetCycleTime(TP_STRUCT * const tp, double secs){
 
     if (!tp || secs <= 0.0) {
@@ -1231,29 +1231,6 @@ struct state_tag_t tpGetExecTag(TP_STRUCT * const tp){
     }
     return tp->execTag;
 }
-
-/*
-// This function is responsible for long startup delay if return=1.
-int tcqFull(TC_QUEUE_STRUCT const * const tcq){
-
-    // Priority fill buffer up to ** half ** the buffer size.
-    // Dont fill the entire buffer at program start.
-    // This results in:
-    // When adding fillets, 2 segments at at time
-    // are added to the buffer, resulting in overwriting the todo segments.
-    if(push_counter(vector_ptr)<VECTOR_BUFFER_SIZE){
-        return 0; // Add segments.
-    }
-
-    // Add new segments to the ringbuffer.
-    if(path.global_index > push_counter(vector_ptr) - (0.5*VECTOR_BUFFER_SIZE)){
-        // printf("add segment. \n");
-        return 0; // Add segments.
-    }
-
-    // Full. No new segments are added.
-    return 1;
-}*/
 
 // This function is responsible for long startup delay if return=1.
 int tcqFull(TC_QUEUE_STRUCT const * const tcq){

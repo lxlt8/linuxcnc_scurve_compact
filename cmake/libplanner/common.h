@@ -20,6 +20,7 @@ enum path_optimalisation_algo {
 };
 
 struct path_data {
+
     double cycletime;
     int ringbuffer_index;
     int global_index;
