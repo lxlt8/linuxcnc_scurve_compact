@@ -836,6 +836,10 @@ void tpUpdateMaxVel(TP_STRUCT * const tp,
     // Limit to maxvel.
     path->maxvel=fmin(path->maxvel, tp->vLimit);
 
+    // Give the maxvel a minimal tiny value to avoid a scurve duplicate cycle, wich triggers a next motion.
+    // Resulting in jumping the tp to next segment position.
+    path->maxvel=fmax(path->maxvel, 1e-3);
+
     // Apply adaptive feed ratio. -1, 0, 1.
     path->maxvel=fabs((*emcmot_hal_data->adaptive_feed) * path->maxvel);
 }
