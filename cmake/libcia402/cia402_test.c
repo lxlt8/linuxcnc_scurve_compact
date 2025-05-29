@@ -53,7 +53,45 @@ typedef struct {
     hal_bit_t Pin;
 } param_bit_data_t;
 
+enum current_status {
+    NOT_READY_TO_SWITCH_ON,
+    SWITCH_ON_DISABLED,
+    READY_TO_SWITCH_ON,
+    SWITCH_ON,
+    OPERATION_ENABLED,
+    QUICK_STOP_ACTIVE,
+    FAULT_REACTION_ACTIVE,
+    SERVO_FAULT
+};
+
+enum current_opmode {
+    HOMING = 6,
+    NONE = 0,
+    CYCLIC_POSITION = 8,
+    CYCLIC_VELOCITY = 9
+};
+
+enum current_fault {
+    OK,
+    FAULT,
+    SHUTDOWN
+};
+
+enum current_home {
+    HOME_START,
+    HOME_BUSY,
+    HOME_READY
+};
+
+// Constants
+#define FAULT_AUTORESET_DELAY_NS 100000000LL
+
+
 typedef struct {
+
+    enum current_fault enum_fault;
+    enum current_home enum_home;
+
     // Pin.
     hal_float_t *pos_cmd;
     hal_float_t *pos_fb;
@@ -64,6 +102,7 @@ typedef struct {
     hal_float_t velo_scale;
     // Pin.
 
+    hal_bit_t *enable;
     hal_bit_t *home;
     hal_bit_t *opmode_cyclic_position;
     hal_bit_t *opmode_cyclic_velocity;
@@ -85,6 +124,11 @@ typedef struct {
     hal_bit_t *stat_acknowledged;
     hal_bit_t *stat_following_error;
     hal_bit_t *stat_referenced;
+    hal_bit_t *stat_positive_limit;
+    hal_bit_t *stat_negative_limit;
+    hal_bit_t *stat_bit_11;
+    hal_bit_t *stat_bit_12;
+    hal_bit_t *stat_bit_13;
     hal_bit_t *drv_fault;
     // Test.
     hal_bit_t switch_enable_voltage;
@@ -98,9 +142,11 @@ typedef struct {
     // Pin.
     hal_u32_t *statusword;
     hal_u32_t *controlword;
+    // Param.
+    hal_u32_t status;
     // Pin.
-    hal_s32_t *opmode;
-    hal_s32_t *opmode_display;
+    hal_s32_t *opmode;                  // OUT.
+    hal_s32_t *opmode_display;          // IN.
     hal_s32_t *drv_actual_position;
     hal_s32_t *drv_actual_velocity;
     hal_s32_t *drv_target_position;
@@ -125,6 +171,8 @@ typedef struct {
 } joint_data_t;
 joint_data_t *JD;
 
+
+
 // To clean hal environment after runtest :
 // ~/linuxcnc_scurve_compact/scripts$ ./halrun -U
 
@@ -136,13 +184,6 @@ MODULE_LICENSE("GPL");
 static int comp_idx;    // Component ID.
 static int count;       // How much servo's to use.
 RTAPI_MP_INT(count, "number of servo drives");
-
-// Constants
-#define FAULT_AUTORESET_DELAY_NS 100000000LL
-#define OPMODE_CYCLIC_POSITION 8
-#define OPMODE_CYCLIC_VELOCITY 9
-#define OPMODE_HOMING 6
-#define OPMODE_NONE 0
 
 // Function defenitions.
 static void read_all();
@@ -164,6 +205,9 @@ void init_vars(){
         JD[i].trigger0=0;
         JD[i].trigger1=0;
         JD[i].trigger2=0;
+
+        JD[i].enum_fault = OK;
+        JD[i].enum_home = HOME_READY;
     }
 }
 
@@ -217,150 +261,220 @@ static void read_all(){
         check_scales(&JD[i].pos_scale, &JD[i].pos_scale_old, &JD[i].pos_scale_rcpt);
         check_scales(&JD[i].velo_scale, &JD[i].velo_scale_old, &JD[i].velo_scale_rcpt);
 
-        // Read position feedback
         *JD[i].pos_fb = (double)*JD[i].drv_actual_position * JD[i].pos_scale_rcpt;
-
         // Read velocity feedback
         *JD[i].velocity_fb = ((double)*JD[i].drv_actual_velocity) * JD[i].velo_scale_rcpt;
 
         // Read Modes of Operation
-        *JD[i].opmode_no_mode = (*JD[i].opmode_display == OPMODE_NONE);
-        *JD[i].opmode_homing = (*JD[i].opmode_display == OPMODE_HOMING);
-        *JD[i].opmode_cyclic_velocity = (*JD[i].opmode_display == OPMODE_CYCLIC_VELOCITY);
-        *JD[i].opmode_cyclic_position = (*JD[i].opmode_display == OPMODE_CYCLIC_POSITION);
+        *JD[i].opmode_no_mode = (*JD[i].opmode_display == NONE);
+        *JD[i].opmode_homing = (*JD[i].opmode_display == HOMING);
+        *JD[i].opmode_cyclic_velocity = (*JD[i].opmode_display == CYCLIC_VELOCITY);
+        *JD[i].opmode_cyclic_position = (*JD[i].opmode_display == CYCLIC_POSITION);
 
         // Read status
-        *JD[i].stat_switchon_ready    = (*JD[i].statusword >> 0) & 1;
-        *JD[i].stat_switched_on       = (*JD[i].statusword >> 1) & 1;
-        *JD[i].stat_op_enabled        = (*JD[i].statusword >> 2) & 1;
-        *JD[i].stat_fault             = (*JD[i].statusword >> 3) & 1;
-        *JD[i].stat_voltage_enabled   = (*JD[i].statusword >> 4) & 1;
-        *JD[i].stat_quick_stop        = (*JD[i].statusword >> 5) & 1;
-        *JD[i].stat_switchon_disabled = (*JD[i].statusword >> 6) & 1;
-        *JD[i].stat_warning           = (*JD[i].statusword >> 7) & 1;
-        *JD[i].stat_remote            = (*JD[i].statusword >> 9) & 1;
+        *JD[i].stat_switchon_ready      = (*JD[i].statusword >> 0) & 1;
+        *JD[i].stat_switched_on         = (*JD[i].statusword >> 1) & 1;
+        *JD[i].stat_op_enabled          = (*JD[i].statusword >> 2) & 1;
+        *JD[i].stat_fault               = (*JD[i].statusword >> 3) & 1;
+        *JD[i].stat_voltage_enabled     = (*JD[i].statusword >> 4) & 1;
+        *JD[i].stat_quick_stop          = (*JD[i].statusword >> 5) & 1;
+        *JD[i].stat_switchon_disabled   = (*JD[i].statusword >> 6) & 1;
+        *JD[i].stat_warning             = (*JD[i].statusword >> 7) & 1;
+        *JD[i].stat_remote              = (*JD[i].statusword >> 9) & 1;
+        *JD[i].stat_target_reached      = (*JD[i].statusword >> 10) & 1;
+        *JD[i].stat_bit_11              = (*JD[i].statusword >> 11) & 1;
+        *JD[i].stat_bit_12              = (*JD[i].statusword >> 12) & 1;
+        *JD[i].stat_bit_13              = (*JD[i].statusword >> 13) & 1;
+        *JD[i].stat_positive_limit      = (*JD[i].statusword >> 14) & 1;
+        *JD[i].stat_negative_limit      = (*JD[i].statusword >> 15) & 1;
 
-        if (*JD[i].opmode_cyclic_position || *JD[i].opmode_cyclic_velocity) {
-            *JD[i].stat_target_reached = (*JD[i].statusword >> 10) & 1;
+        // Set the enum status based on the status bits.
+        int bit0 = (*JD[i].statusword >> 0) & 1;
+        int bit1 = (*JD[i].statusword >> 1) & 1;
+        int bit2 = (*JD[i].statusword >> 2) & 1;
+        int bit3 = (*JD[i].statusword >> 3) & 1;
+        int bit4 = (*JD[i].statusword >> 4) & 1;
+        int bit5 = (*JD[i].statusword >> 5) & 1;
+        int bit6 = (*JD[i].statusword >> 6) & 1;
+
+        int bit10 = (*JD[i].statusword >> 10) & 1;
+        int bit12 = (*JD[i].statusword >> 12) & 1;
+
+        if(!bit0 && !bit1 && !bit2 && !bit3 && !bit6){
+            JD[i].status = NOT_READY_TO_SWITCH_ON;
+        }
+        if(!bit0 && !bit1 && !bit2 && !bit3 && !bit6){
+            JD[i].status = SWITCH_ON_DISABLED;
+        }
+        if(bit0 && !bit1 && !bit2 && !bit3 && bit5 && !bit6){
+            JD[i].status = READY_TO_SWITCH_ON;
+        }
+        if(bit0 && bit1 && !bit2 && !bit3 && bit5 && !bit6){
+            JD[i].status = SWITCH_ON;
+        }
+        if(bit0 && bit1 && bit2 && !bit3 && bit5 && !bit6){
+            JD[i].status = OPERATION_ENABLED;
+        }
+        if(bit0 && bit1 && bit2 && !bit3 && !bit5 && !bit6){
+            JD[i].status = QUICK_STOP_ACTIVE;
+        }
+        if(bit0 && bit1 && bit2 && bit3 && !bit6){
+            JD[i].status = FAULT_REACTION_ACTIVE;
+        }
+        if(!bit0 && !bit1 && !bit2 && bit3 && !bit6){
+            JD[i].status = SERVO_FAULT;
+        }
+
+        if(bit10 && bit12){
+            *JD[i].stat_homed = 1;
         } else {
-            *JD[i].stat_target_reached = 0;
+            *JD[i].stat_homed = 0;
         }
 
-        // Home states
-        if (*JD[i].opmode_homing) {
-            *JD[i].stat_homed  = ((*JD[i].statusword >> 10) & 1) && ((*JD[i].statusword >> 12) & 1);
-            *JD[i].stat_homing = !JD[i].stat_homed && !((*JD[i].statusword >> 10) & 1);
+        if(*JD[i].opmode_homing && !bit10 && bit12){
+            *JD[i].stat_homing = 1;
+        } else {
+            *JD[i].stat_homing = 0;
         }
-
-        //        // Update fault output
-        //        if (JD[i].auto_fault_reset_delay > 0) {
-        //            double period = 1;
-        //            JD[i].auto_fault_reset_delay -= period;
-        //            *JD[i].drv_fault = 0;
-        //        } else {
-        //            *JD[i].drv_fault = *JD[i].stat_fault && *JD[i].enable;
-        //        }
     }
 }
 
+// Function to write shutdown to the drive nr i.
+void inline shutdown_(int i){
+    uint8_t mask;
+    mask = (0 << 0) | (1 << 1) | (1 << 2) | (0 << 3) | (0 << 7);
+    *JD[i].controlword = mask;
+}
+
+// Function to switch on drive nr i.
+void inline switch_on_(int i){
+    uint8_t mask;
+    mask = (1 << 0) | (1 << 1) | (1 << 2) | (0 << 3)  | (0 << 7);
+    *JD[i].controlword = mask;
+}
+
+// Function to enable operation for drive nr i.
+void inline enable_operation_(int i){
+    uint8_t mask;
+    mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (0 << 7);
+    *JD[i].controlword = mask;
+}
+
+// Function to reset fault for drive nr i.
+void inline reset_fault_(int i){
+    uint8_t mask;
+    mask = (1 << 7);
+    *JD[i].controlword = mask;
+}
+
+// Function to perform home sequence for drive nr i.
+// Here the servo feedback gives error, because it want to change position by itself.
+void inline home_(int i){
+    uint8_t mask;
+    // mask = (1 << 4);
+
+    mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (0 << 7);
+    *JD[i].controlword = mask;
+    JD[i].enum_home = HOME_BUSY;
+}
+
+// Function to set homed for drive nr i.
+void inline set_homed_(int i){
+    uint8_t mask;
+    mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (0 << 4) | (0 << 7);
+    *JD[i].controlword = mask;
+    JD[i].enum_home = HOME_READY;
+}
+
+// Function to write position & velocity to drive nr i.
+void inline write_position_velocity_(int i){
+    // Write position command
+    *JD[i].drv_target_position = (int32_t) (*JD[i].pos_cmd * JD[i].pos_scale);
+    // Write velocity command
+    *JD[i].drv_target_velocity = (int32_t) (*JD[i].velocity_cmd * JD[i].velo_scale);
+}
+
 static void write_all(){
-    int enable_edge;
+
     for(int i=0; i<count; i++){
 
-        // Shutdown.
-        if (JD[i].switch_shutdown) {
-            uint8_t mask = (0 << 0) | (1 << 1) | (1 << 2) | (0 << 3) | (0 << 7);
-            *JD[i].controlword = mask;
-        }
-        // Switch on.
-        if(JD[i].switch_on){
-            // *JD[i].controlword |= (1 << 0); // Switch on
-            uint8_t mask = (1 << 0) | (1 << 1) | (1 << 2) | (0 << 3)  | (0 << 7);
-            *JD[i].controlword = mask;
-        }
-        // Enable operation.
-        if(JD[i].switch_enable_operation){
-            uint8_t mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (0 << 7);
-            *JD[i].controlword = mask;
-        }
-        // Reset fault
-        if(JD[i].switch_reset_fault){
-            uint8_t mask =  (1 << 7);
-            *JD[i].controlword = mask;
+        switch (JD[i].enum_fault) {
+        case OK:
+            // Go on.
+            break;
+        case SHUTDOWN:
+            shutdown_(i);
+            JD[i].enum_fault = OK;
+            return;
+        case FAULT:
+            // Reset fault.
+            reset_fault_(i);
+            JD[i].enum_fault = SHUTDOWN;
+            return;
+        default:
+            break;
         }
 
-
-
-        if (JD[i].switch_home) {
-            *JD[i].opmode = OPMODE_HOMING;
-            // *JD[i].controlword |= (*JD[i].home << 4);
-        } else if(JD[i].switch_pos){
-            *JD[i].opmode = OPMODE_CYCLIC_POSITION;
-        } else if(JD[i].switch_vel){
-            *JD[i].opmode = OPMODE_CYCLIC_VELOCITY;
-        } else {
-            *JD[i].opmode = OPMODE_NONE;
+        switch (JD[i].enum_home) {
+        case HOME_START:
+            home_(i);
+            break;
+        case HOME_BUSY:
+            // set_homed_(i);
+            // Don't update the position feedback to other values.
+            break;
+        case HOME_READY:
+            // Do nothing.
+            break;
+        default:
+            break;
         }
 
-        //        // Init opmode
-        //        if (!JD[i].init_pos_mode) {
-        //            JD[i].pos_mode = JD[i].csp_mode;
-        //            JD[i].init_pos_mode = 1;
-        //        }
+        switch (JD[i].status) {
+        case NOT_READY_TO_SWITCH_ON:
+        case SWITCH_ON_DISABLED:
+            // Shutdown.
+            shutdown_(i);
+            break;
+        case READY_TO_SWITCH_ON:
+            // Switch on.
+            switch_on_(i);
+            break;
+        case SWITCH_ON:
+            // Enable operation.
+            enable_operation_(i);
+            break;
+        case OPERATION_ENABLED:
+            // Drive is running.
+            // Set to position mode, velocity mode.
 
+            if (JD[i].switch_home) {
+                *JD[i].opmode = HOMING;
+                JD[i].enum_home = HOME_START;
+            } else if(JD[i].switch_pos){
+                *JD[i].opmode = CYCLIC_POSITION;
+            } else if(JD[i].switch_vel){
+                *JD[i].opmode = CYCLIC_VELOCITY;
+            } else {
+                *JD[i].opmode = NONE;
+            }
 
-        //        // Detect enable edge
-        //        enable_edge = *JD[i].enable && !JD[i].enable_old;
-        //        JD[i].enable_old = *JD[i].enable;
-
-        //        // Write control register
-        //        *JD[i].controlword = (1 << 2); // Quick stop is not supported
-        //        if (*JD[i].stat_fault) {
-        //            *JD[i].home = 0;
-        //            if (*JD[i].fault_reset) {
-        //                *JD[i].controlword |= (1 << 7); // Fault reset
-        //            }
-        //            if (JD[i].auto_fault_reset && enable_edge) {
-        //                JD[i].auto_fault_reset_delay = FAULT_AUTORESET_DELAY_NS;
-        //                *JD[i].controlword |= (1 << 7); // Fault reset
-        //            }
-        //        } else {
-        //            if (*JD[i].enable) {
-        //                *JD[i].controlword |= (1 << 1); // Enable voltage
-        //                if (*JD[i].stat_switchon_ready) {
-        //                    *JD[i].controlword |= (1 << 0); // Switch on
-        //                    if (*JD[i].stat_switched_on) {
-        //                        *JD[i].controlword |= (1 << 3); // Enable op
-        //                    }
-        //                }
-        //            }
-        //        }
+            break;
+        case QUICK_STOP_ACTIVE:
+            // Hmm. What to do?
+            break;
+        case FAULT_REACTION_ACTIVE:
+            JD[i].enum_fault = FAULT;
+            break;
+        case SERVO_FAULT:
+            JD[i].enum_fault = FAULT;
+            break;
+        default:
+            break;
+        }
 
         // Write position command
-        *JD[i].drv_target_position = (int32_t) (*JD[i].pos_cmd * JD[i].pos_scale);
-        // Write velocity command
-        *JD[i].drv_target_velocity = (int32_t) (*JD[i].velocity_cmd * JD[i].velo_scale);
-
-        //        // Reset home command
-        //        if (*JD[i].home && (*JD[i].stat_homed && !JD[i].stat_homed_old) && *JD[i].opmode_homing) {
-        //            *JD[i].home = 0;
-        //        }
-        //        JD[i].stat_homed_old = *JD[i].stat_homed;
-
-        //        // OP Mode
-        //        // Set to position mode
-        //        if (*JD[i].stat_voltage_enabled&& !*JD[i].home ) {
-        //            *JD[i].opmode = OPMODE_CYCLIC_POSITION;
-        //        }
-        //        // Set velo mode
-        //        if (*JD[i].stat_voltage_enabled && !JD[i].pos_mode && !*JD[i].home) {
-        //            *JD[i].opmode = OPMODE_CYCLIC_VELOCITY;
-        //        }
-        //        // Mode Home and start homing
-        //        if (*JD[i].home) {
-        //            *JD[i].opmode = OPMODE_HOMING;
-        //            *JD[i].controlword |= (*JD[i].home << 4);
-        //        }
+        write_position_velocity_(i);
     }
 }
 
@@ -370,6 +484,9 @@ static int setup_pins(int count){
     JD = hal_malloc(sizeof(joint_data_t) * count); // Allocate memory.
 
     for(int i=0; i<count; i++){
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.enable", i);
+        r+= hal_pin_bit_new(pin_name, HAL_IN, &(JD[i].enable), comp_idx);
 
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.switch-reset-fault", i);
         r+= hal_param_bit_new(pin_name, HAL_RW, &(JD[i].switch_reset_fault), comp_idx);
@@ -461,6 +578,21 @@ static int setup_pins(int count){
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-referenced", i);
         r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_referenced),comp_idx);
 
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-positive-limit", i);
+        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_positive_limit),comp_idx);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-negative-limit", i);
+        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_negative_limit),comp_idx);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-bit-11", i);
+        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_bit_11),comp_idx);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-bit-12", i);
+        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_bit_12),comp_idx);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-bit-13", i);
+        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_bit_13),comp_idx);
+
         // Float pins.
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.pos-cmd", i);
         r+=hal_pin_float_new(pin_name,HAL_IN,&(JD[i].pos_cmd),comp_idx);
@@ -493,6 +625,9 @@ static int setup_pins(int count){
 
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.controlword", i);
         r+=hal_pin_u32_new(pin_name,HAL_OUT,&(JD[i].controlword),comp_idx);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.status", i);
+        r+=hal_param_u32_new(pin_name,HAL_RW,&(JD[i].status),comp_idx);
 
         // S32 pins.
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.opmode", i);
