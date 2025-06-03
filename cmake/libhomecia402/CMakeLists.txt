@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-set(PROJECT "homemod_cia402")
+set(PROJECT "homecia402")
 project(${PROJECT} CXX C)
 
 # Set variables.
@@ -30,9 +30,10 @@ SET(GCC_COVERAGE_COMPILE_FLAGS "
 add_definitions(-DRTAPI -D_GNU_SOURCE -D__MODULE__ )
 
 ADD_LIBRARY(${PROJECT} SHARED
-    ${SRC_DIR}/homemod_cia402.c
-    ${SRC_DIR}/homing_cia402.h
-    ${SRC_DIR}/homing_cia402.c
+    ${SRC_DIR}/homecia402.c
+    ${SRC_DIR}/../../src/emc/motion/homing.h
+    ${SRC_DIR}/homingcia402.c
+    ${SRC_DIR}/../../src/emc/motion/motion.h
 )
 
 # Set the RPATH for runtime linking

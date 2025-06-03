@@ -60,9 +60,9 @@ make -j`nproc`
 sudo make install
 cd ../..
 
-# Motion component "homemod.so"
+# Homing component "homemod.so"
 echo "+---------------------------------------------------------------+"
-echo "|                     custom homemod.so                          |"
+echo "|                     homemod.so                          |"
 echo "+---------------------------------------------------------------+"
 cd libhome
 mkdir -p build
@@ -71,6 +71,18 @@ eval $BUILDER
 make -j`nproc`
 sudo make install
 cd ../..
+
+# Homing component "homeextern.so"
+#echo "+---------------------------------------------------------------+"
+#echo "|                     homecia402.so                          |"
+#echo "+---------------------------------------------------------------+"
+#cd libhomecia402
+#mkdir -p build
+#cd build
+#eval $BUILDER
+#make -j`nproc`
+#sudo make install
+#cd ../..
 
 # Motion planner realtime component "libclothoid3d.so"
 echo "+---------------------------------------------------------------+"

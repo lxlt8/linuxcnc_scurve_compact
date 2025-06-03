@@ -714,6 +714,7 @@ static bool sync_ready(int joint_num)
     return 1; // ready
 } // sync_ready()
 
+//#include "stdio.h"
 static int base_1joint_state_machine(int joint_num)
 {
     emcmot_joint_t *joint;
@@ -724,6 +725,7 @@ static int base_1joint_state_machine(int joint_num)
     homing_flag = 0;
     joint = &joints[joint_num];
     home_sw_active = H[joint_num].home_sw;
+
     if (H[joint_num].home_state != HOME_IDLE) {
         homing_flag = 1; /* at least one joint is homing */
     }

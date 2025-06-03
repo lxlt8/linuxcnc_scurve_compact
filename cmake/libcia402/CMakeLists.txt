@@ -29,7 +29,10 @@ SET(GCC_COVERAGE_COMPILE_FLAGS "
 add_definitions(-DRTAPI -D_GNU_SOURCE -D__MODULE__ )
 
 ADD_LIBRARY(${PROJECT} SHARED
-    ${SRC_DIR}/cia402_test.c
+    ${SRC_DIR}/drive_command.h
+    ${SRC_DIR}/halsection.h
+    ${SRC_DIR}/halpins.h
+    ${SRC_DIR}/cia402.c
 )
 
 # Set the RPATH for runtime linking

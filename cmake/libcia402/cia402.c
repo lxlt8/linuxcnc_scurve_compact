@@ -1,7 +1,7 @@
 /********************************************************************
-*   Written by Grotius, alias Skynet
+*   Written by Julian Koning, alias ..
 *
-* Author: Michel Wijnja
+* Author: Julian Koning
 * License: GPL Version 2
 * System: Linux
 *
@@ -17,458 +17,255 @@
 #include "rtapi_io.h"
 #include "hal.h"
 #include "stdio.h"
-
-typedef struct {
-    bool ok;
-} skynet_t;
-skynet_t *skynet;
-
-typedef struct {
-    hal_float_t *Pin;
-} float_data_t;
-
-// Single pins
-typedef struct {
-    hal_bit_t *Pin;
-} bit_data_t;
-
-typedef struct {
-    hal_u32_t *Pin;
-} u32_data_t;
-
-typedef struct {
-    hal_s32_t *Pin;
-} s32_data_t;
-
-typedef struct {
-    hal_port_t *Pin;
-} port_data_t;
-
-// Single params
-typedef struct {
-    hal_float_t Pin;
-} param_float_data_t;
-
-typedef struct {
-    hal_bit_t Pin;
-} param_bit_data_t;
-
-typedef struct {
-    // Pin.
-    hal_float_t *pos_cmd;
-    hal_float_t *pos_fb;
-    hal_float_t *velocity_cmd;
-    hal_float_t *velocity_fb;
-    // Param.
-    hal_float_t pos_scale;
-    hal_float_t velo_scale;
-    // Pin.
-    hal_bit_t *enable;
-    hal_bit_t *home;
-    hal_bit_t *fault_reset;
-    hal_bit_t *opmode_cyclic_position;
-    hal_bit_t *opmode_cyclic_velocity;
-    hal_bit_t *opmode_no_mode;
-    hal_bit_t *opmode_homing;
-    hal_bit_t *stat_homing;
-    hal_bit_t *stat_homed;
-    hal_bit_t *stat_switchon_ready;
-    hal_bit_t *stat_switched_on;
-    hal_bit_t *stat_op_enabled;
-    hal_bit_t *stat_fault;
-    hal_bit_t *stat_voltage_enabled;
-    hal_bit_t *stat_quick_stop;
-    hal_bit_t *stat_switchon_disabled;
-    hal_bit_t *stat_warning;
-    hal_bit_t *stat_remote;
-    hal_bit_t *stat_target_reached;
-    hal_bit_t *stat_internal_limit;
-    hal_bit_t *stat_acknowledged;
-    hal_bit_t *stat_following_error;
-    hal_bit_t *stat_referenced;
-    hal_bit_t *drv_fault;
-    // Pin.
-    hal_u32_t *statusword;
-    hal_u32_t *controlword;
-    // Pin.
-    hal_s32_t *opmode;
-    hal_s32_t *opmode_display;
-    hal_s32_t *drv_actual_position;
-    hal_s32_t *drv_actual_velocity;
-    hal_s32_t *drv_target_position;
-    hal_s32_t *drv_target_velocity;
-    // Param.
-    hal_bit_t auto_fault_reset;
-    hal_bit_t csp_mode;
-    // Vars.
-    float pos_scale_old;
-    float velo_scale_old;
-    bool enable_old;
-    bool stat_homed_old;
-    bool stat_fault_old;
-    double pos_scale_rcpt;
-    double velo_scale_rcpt;
-    bool pos_mode;
-    bool init_pos_mode;
-    long auto_fault_reset_delay;
-
-} joint_data_t;
-joint_data_t *JD;
+#include "halsection.h"
+#include "halpins.h"
+#include "drive_command.h"
 
 // To clean hal environment after runtest :
 // ~/linuxcnc_scurve_compact/scripts$ ./halrun -U
 
 /* module information */
 MODULE_AUTHOR("Michel Wijnja");
-MODULE_DESCRIPTION("Halmodule ethercat cia402");
+MODULE_DESCRIPTION("Halmodule cia402");
 MODULE_LICENSE("GPL");
 
-static int comp_idx;    // Component ID.
-static int count;       // How much servo's to use.
+static int comp_idx;            // Component ID
+static int count;               // How much servo's to use.
 RTAPI_MP_INT(count, "number of servo drives");
-
-// Constants
-#define FAULT_AUTORESET_DELAY_NS 100000000LL
-#define OPMODE_CYCLIC_POSITION 8
-#define OPMODE_CYCLIC_VELOCITY 9
-#define OPMODE_HOMING 6
-#define OPMODE_NONE 0
 
 // Function defenitions.
 static void read_all();
 static void write_all();
-static int setup_pins(int count);
-
-// initialize variables
-void init_vars(){
-    for(int i=0; i<count; i++){
-        JD[i].pos_scale = 1.0;
-        JD[i].pos_scale_old = JD[i].pos_scale + 1.0;
-        JD[i].pos_scale_rcpt = 1.0;
-        JD[i].velo_scale = 1.0;
-        JD[i].velo_scale_old = JD[i].velo_scale + 1.0;
-        JD[i].velo_scale_rcpt = 1.0;
-        JD[i].auto_fault_reset = 1;
-        JD[i].csp_mode = 1;
-    }
-}
-
-// check for change in scale value
-void check_scales(hal_float_t *scale, float *scale_old, double *scale_rcpt) {
-    if (*scale != *scale_old) {
-        // scale value has changed, test and update it
-        if ((*scale < 1e-20) && (*scale > -1e-20)) {
-            // value too small, divide by zero is a bad thing
-            *scale = 1.0;
-        }
-        // save new scale to detect future changes
-        *scale_old = *scale;
-        // we actually want the reciprocal
-        *scale_rcpt = 1.0 / *scale;
-    }
-}
+static joint_data_t *jd = NULL;  // Initialize to NULL
 
 // Dlopen ..
 int rtapi_app_main(void) {
-    // rtapi_print_msg(RTAPI_MSG_ERR, "count: %d\n", count);
     int r = 0;
     comp_idx = hal_init("cia402");
     if(comp_idx < 0) return comp_idx;
 
-    skynet = hal_malloc(sizeof(skynet_t));
-    r += hal_export_funct("cia402.read-all", read_all, &skynet,0,0,comp_idx);
-    r += hal_export_funct("cia402.write-all", write_all, &skynet,0,0,comp_idx);
-    r += setup_pins(count);
-
+    r = hal_export_funct("cia402.read-all", read_all, NULL, 0, 0, comp_idx);
+    r = hal_export_funct("cia402.write-all", write_all, NULL, 0, 0, comp_idx);
     if(r) {
         hal_exit(comp_idx);
-    } else {
-        hal_ready(comp_idx);
+        return r;
     }
-    init_vars();
+
+    // Allocate memory - use the global jd, not a local one
+    jd = allocate_joint_data(count);
+    if (!jd) {
+        hal_exit(comp_idx);
+        return -1;
+    }
+
+    r = setup_pins(jd, count, comp_idx);
+    if(r) {
+        jd = NULL;
+        hal_exit(comp_idx);
+        return r;
+    }
+
+    hal_ready(comp_idx);
     return 0;
 }
 
-// Exit.
-void rtapi_app_exit(void){
+void rtapi_app_exit(void) {
+    if(jd) {
+        // hal_free(jd);
+        jd = NULL;
+    }
     hal_exit(comp_idx);
 }
 
-// Update from servo-cycle.
-static void read_all(){
+void read_drive_status(joint_data_t *joint) {
 
-    for(int i=0; i<count; i++){
+    // Check input values for pos & vel scale.
+    drive_check_scales(joint);
 
-        // Check for change in scale value
-        check_scales(&JD[i].pos_scale, &JD[i].pos_scale_old, &JD[i].pos_scale_rcpt);
-        check_scales(&JD[i].velo_scale, &JD[i].velo_scale_old, &JD[i].velo_scale_rcpt);
+    // Update run timer.
+    *joint->stat_runtime += 0.001;
 
-        // Read position feedback
-        *JD[i].pos_fb = (double)*JD[i].drv_actual_position * JD[i].pos_scale_rcpt;
+    // Get pos & vel feedback.
+    *joint->pos_fb = (double)(*joint->actual_position) * (1/(double)(*joint->var_pos_scale));
+    *joint->vel_fb = (double)(*joint->actual_velocity) * (1/(double)(*joint->var_vel_scale));
 
-        // Read velocity feedback
-        *JD[i].velocity_fb = ((double)*JD[i].drv_actual_velocity) * JD[i].velo_scale_rcpt;
+    // Read Modes of Operation
+    *joint->stat_opmode_no_mode = (*joint->opmode_display == OPMODE_NONE);
+    *joint->stat_opmode_homing = (*joint->opmode_display == OPMODE_HOMING);
+    *joint->stat_opmode_cyclic_velocity = (*joint->opmode_display == OPMODE_CYCLIC_VELOCITY);
+    *joint->stat_opmode_cyclic_position = (*joint->opmode_display == OPMODE_CYCLIC_POSITION);
 
-        // Read Modes of Operation
-        *JD[i].opmode_no_mode = (*JD[i].opmode_display == OPMODE_NONE);
-        *JD[i].opmode_homing = (*JD[i].opmode_display == OPMODE_HOMING);
-        *JD[i].opmode_cyclic_velocity = (*JD[i].opmode_display == OPMODE_CYCLIC_VELOCITY);
-        *JD[i].opmode_cyclic_position = (*JD[i].opmode_display == OPMODE_CYCLIC_POSITION);
+    // Read status
+    *joint->stat_switchon_ready      = (*joint->statusword >> 0) & 1;
+    *joint->stat_switched_on         = (*joint->statusword >> 1) & 1;
+    *joint->stat_op_enabled          = (*joint->statusword >> 2) & 1;
+    *joint->stat_fault               = (*joint->statusword >> 3) & 1;
+    *joint->stat_voltage_enabled     = (*joint->statusword >> 4) & 1;
+    *joint->stat_quick_stop          = (*joint->statusword >> 5) & 1;
+    *joint->stat_switchon_disabled   = (*joint->statusword >> 6) & 1;
+    *joint->stat_warning             = (*joint->statusword >> 7) & 1;
+    *joint->stat_remote              = (*joint->statusword >> 9) & 1;
+    *joint->stat_target_reached      = (*joint->statusword >> 10) & 1;
+    *joint->stat_bit_11              = (*joint->statusword >> 11) & 1;
+    *joint->stat_bit_12              = (*joint->statusword >> 12) & 1;
+    *joint->stat_bit_13              = (*joint->statusword >> 13) & 1;
+    *joint->stat_positive_limit      = (*joint->statusword >> 14) & 1;
+    *joint->stat_negative_limit      = (*joint->statusword >> 15) & 1;
 
-        // Read status
-        *JD[i].stat_switchon_ready    = (*JD[i].statusword >> 0) & 1;
-        *JD[i].stat_switched_on       = (*JD[i].statusword >> 1) & 1;
-        *JD[i].stat_op_enabled        = (*JD[i].statusword >> 2) & 1;
-        *JD[i].stat_fault             = (*JD[i].statusword >> 3) & 1;
-        *JD[i].stat_voltage_enabled   = (*JD[i].statusword >> 4) & 1;
-        *JD[i].stat_quick_stop        = (*JD[i].statusword >> 5) & 1;
-        *JD[i].stat_switchon_disabled = (*JD[i].statusword >> 6) & 1;
-        *JD[i].stat_warning           = (*JD[i].statusword >> 7) & 1;
-        *JD[i].stat_remote            = (*JD[i].statusword >> 9) & 1;
+    // Set the enum status based on the status bits.
+    int bit0 = (*joint->statusword >> 0) & 1;
+    int bit1 = (*joint->statusword >> 1) & 1;
+    int bit2 = (*joint->statusword >> 2) & 1;
+    int bit3 = (*joint->statusword >> 3) & 1;
+    int bit4 = (*joint->statusword >> 4) & 1;
+    int bit5 = (*joint->statusword >> 5) & 1;
+    int bit6 = (*joint->statusword >> 6) & 1;
 
-        if (*JD[i].opmode_cyclic_position || *JD[i].opmode_cyclic_velocity) {
-            *JD[i].stat_target_reached = (*JD[i].statusword >> 10) & 1;
-        } else {
-            *JD[i].stat_target_reached = 0;
-        }
+    int bit10 = (*joint->statusword >> 10) & 1;
+    int bit12 = (*joint->statusword >> 12) & 1;
 
-        // Home states
-        if (*JD[i].opmode_homing) {
-            *JD[i].stat_homed  = ((*JD[i].statusword >> 10) & 1) && ((*JD[i].statusword >> 12) & 1);
-            *JD[i].stat_homing = !JD[i].stat_homed && !((*JD[i].statusword >> 10) & 1);
-        }
-
-        // Update fault output
-        if (JD[i].auto_fault_reset_delay > 0) {
-            double period = 1;
-            JD[i].auto_fault_reset_delay -= period;
-            *JD[i].drv_fault = 0;
-        } else {
-            *JD[i].drv_fault = *JD[i].stat_fault && *JD[i].enable;
-        }
+    if(!bit0 && !bit1 && !bit2 && !bit3 && !bit6){
+        joint->drive_state = NOT_READY_TO_SWITCH_ON;
+    }
+    if(!bit0 && !bit1 && !bit2 && !bit3 && !bit6){
+        joint->drive_state = SWITCH_ON_DISABLED;
+    }
+    if(bit0 && !bit1 && !bit2 && !bit3 && bit5 && !bit6){
+        joint->drive_state = READY_TO_SWITCH_ON;
+    }
+    if(bit0 && bit1 && !bit2 && !bit3 && bit5 && !bit6){
+        joint->drive_state = SWITCH_ON;
+    }
+    if(bit0 && bit1 && bit2 && !bit3 && bit5 && !bit6){
+        joint->drive_state = OPERATION_ENABLED;
+    }
+    if(bit0 && bit1 && bit2 && !bit3 && !bit5 && !bit6){
+        joint->drive_state = QUICK_STOP_ACTIVE;
+    }
+    if(bit0 && bit1 && bit2 && bit3 && !bit6){
+        joint->drive_state = FAULT_REACTION_ACTIVE;
+    }
+    if(!bit0 && !bit1 && !bit2 && bit3 && !bit6){
+        joint->drive_state = SERVO_FAULT;
     }
 }
 
-static void write_all(){
-    int enable_edge;
-    for(int i=0; i<count; i++){
+// Function when drive is in state : Operation enabled.
+void drive_run(joint_data_t *joint){
 
-        // Init opmode
-        if (!JD[i].init_pos_mode) {
-            JD[i].pos_mode = JD[i].csp_mode;
-            JD[i].init_pos_mode = 1;
-        }
+    // Check for inputs.
+    if(*joint->home){
+        printf("home request. \n");
 
-        // Detect enable edge
-        enable_edge = *JD[i].enable && !JD[i].enable_old;
-        JD[i].enable_old = *JD[i].enable;
+        joint->runmode = RUN_HOME;
+        joint->home_struct.hs = HOME_INIT;
+        *joint->home=0;
+    }
 
-        // Write control register
-        *JD[i].controlword = (1 << 2); // Quick stop is not supported
-        if (*JD[i].stat_fault) {
-            *JD[i].home = 0;
-            if (*JD[i].fault_reset) {
-                *JD[i].controlword |= (1 << 7); // Fault reset
-            }
-            if (JD[i].auto_fault_reset && enable_edge) {
-                JD[i].auto_fault_reset_delay = FAULT_AUTORESET_DELAY_NS;
-                *JD[i].controlword |= (1 << 7); // Fault reset
-            }
+    switch (joint->runmode) {
+    case RUN_NONE:
+
+        break;
+    case RUN_POSITION:
+
+        break;
+    case RUN_VELOCITY:
+
+        break;
+    case RUN_HOME:
+        drive_home(joint);
+        break;
+
+    default:
+        break;
+    }
+}
+
+// Servo drive cia402 state machine workflow.
+void drive_state_machine(joint_data_t *joint){
+
+    switch (joint->enum_fault) {
+    case FAULT_OK:
+        // Go on.
+        break;
+    case FAULT_SHUTDOWN_DRIVE:
+        drive_shutdown(joint);
+        joint->enum_fault = FAULT_OK;
+        return;
+    case FAULT_ACTIVE:
+        // Reset fault.
+        drive_reset_fault(joint);
+        joint->enum_fault = FAULT_SHUTDOWN_DRIVE;
+        return;
+    default:
+        break;
+    }
+
+    switch (joint->drive_state) {
+    case NOT_READY_TO_SWITCH_ON:
+    case SWITCH_ON_DISABLED:
+        // Shutdown.
+        drive_shutdown(joint);
+        break;
+    case READY_TO_SWITCH_ON:
+        // Switch on.
+        drive_switch_on(joint);
+        break;
+    case SWITCH_ON:
+        // Enable operation.
+        drive_enable_operation(joint);
+        break;
+    case OPERATION_ENABLED:
+        // Drive is running.
+        drive_run(joint);
+        break;
+    case QUICK_STOP_ACTIVE:
+        // Hmm. What to do?
+        break;
+    case FAULT_REACTION_ACTIVE:
+        joint->enum_fault = FAULT_ACTIVE;
+        break;
+    case SERVO_FAULT:
+        joint->enum_fault = FAULT_ACTIVE;
+        break;
+    default:
+        break;
+    }
+}
+
+// Read from servo-cycle.
+static void read_all() {
+
+    if(!jd) return;  // Safety check
+
+    for(int i = 0; i < count; i++) {
+        joint_data_t *joint = &jd[i];
+        read_drive_status(joint);
+    }
+}
+
+// Write to servo-cycle.
+static void write_all() {
+
+    if(!jd) return;  // Safety check
+
+    for(int i = 0; i < count; i++) {
+        joint_data_t *joint = &jd[i];
+
+        read_drive_status(joint);
+
+        if(*joint->enable){
+            drive_state_machine(joint);
+            drive_write_position(joint);
+            drive_write_velocity(joint);
+            drive_write_torque(joint);
+
         } else {
-            if (*JD[i].enable) {
-                *JD[i].controlword |= (1 << 1); // Enable voltage
-                if (*JD[i].stat_switchon_ready) {
-                    *JD[i].controlword |= (1 << 0); // Switch on
-                    if (*JD[i].stat_switched_on) {
-                        *JD[i].controlword |= (1 << 3); // Enable op
-                    }
-                }
-            }
-        }
-
-        // Write position command
-        *JD[i].drv_target_position = (int32_t) (*JD[i].pos_cmd * JD[i].pos_scale);
-        // Write velocity command
-        *JD[i].drv_target_velocity = (int32_t) (*JD[i].velocity_cmd * JD[i].velo_scale);
-
-        // Reset home command
-        if (*JD[i].home && (*JD[i].stat_homed && !JD[i].stat_homed_old) && *JD[i].opmode_homing) {
-            *JD[i].home = 0;
-        }
-        JD[i].stat_homed_old = *JD[i].stat_homed;
-
-        // OP Mode
-        // Set to position mode
-        if (*JD[i].stat_voltage_enabled&& !*JD[i].home ) {
-            *JD[i].opmode = OPMODE_CYCLIC_POSITION;
-        }
-        // Set velo mode
-        if (*JD[i].stat_voltage_enabled && !JD[i].pos_mode && !*JD[i].home) {
-            *JD[i].opmode = OPMODE_CYCLIC_VELOCITY;
-        }
-        // Mode Home and start homing
-        if (*JD[i].home) {
-            *JD[i].opmode = OPMODE_HOMING;
-            *JD[i].controlword |= (*JD[i].home << 4);
+            drive_shutdown(joint);
+            *joint->pos_offset = *joint->pos_fb - *joint->pos_cmd;
         }
     }
 }
-
-static int setup_pins(int count){
-    int r=0;
-    char pin_name[64]; // Store name.
-    JD = hal_malloc(sizeof(joint_data_t) * count); // Allocate memory.
-
-    for(int i=0; i<count; i++){
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.enable", i);
-        r+= hal_pin_bit_new(pin_name, HAL_IN, &(JD[i].enable), comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.home", i);
-        r+= hal_pin_bit_new(pin_name, HAL_IO, &(JD[i].home), comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.drv-fault-reset", i);
-        r+=hal_pin_bit_new(pin_name,HAL_IN,&(JD[i].fault_reset),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.drv-fault", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].drv_fault),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.opmode-cyclic-position", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].opmode_cyclic_position),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.opmode-cyclic-velocity", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].opmode_cyclic_velocity),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.opmode-no-mode", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].opmode_no_mode),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.opmode-homing", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].opmode_homing),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-homed", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_homed),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-homing", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_homing),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-switchon-ready", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_switchon_ready),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-switched-on", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_switched_on),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-op-enabled", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_op_enabled),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-fault", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_fault),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat_voltage_enabled", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_voltage_enabled),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-quick-stop", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_quick_stop),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-switchon-disabled", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_switchon_disabled),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-warning", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_warning),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-remote", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_remote),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-target-reached", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_target_reached),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-internal-limit", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_internal_limit),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-acknowledged", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_acknowledged),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat_following_error", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_following_error),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-referenced", i);
-        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(JD[i].stat_referenced),comp_idx);
-
-        // Float pins.
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.pos-cmd", i);
-        r+=hal_pin_float_new(pin_name,HAL_IN,&(JD[i].pos_cmd),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.pos-fb", i);
-        r+=hal_pin_float_new(pin_name,HAL_OUT,&(JD[i].pos_fb),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.velocity-fb", i);
-        r+=hal_pin_float_new(pin_name,HAL_OUT,&(JD[i].velocity_fb),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.velocity-cmd", i);
-        r+=hal_pin_float_new(pin_name,HAL_OUT,&(JD[i].velocity_cmd),comp_idx);
-
-        // Param pins.
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.auto-fault-reset", i);
-        r+=hal_param_bit_new(pin_name,HAL_RW,&(JD[i].auto_fault_reset),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.csp-mode", i);
-        r+=hal_param_bit_new(pin_name,HAL_RW,&(JD[i].csp_mode),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.pos-scale", i);
-        r+=hal_param_float_new(pin_name,HAL_RW,&(JD[i].pos_scale),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.velo-scale", i);
-        r+=hal_param_float_new(pin_name,HAL_RW,&(JD[i].velo_scale),comp_idx);
-
-        // U32 pins.
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.statusword", i);
-        r+=hal_pin_u32_new(pin_name,HAL_IN,&(JD[i].statusword),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.controlword", i);
-        r+=hal_pin_u32_new(pin_name,HAL_OUT,&(JD[i].controlword),comp_idx);
-
-        // S32 pins.
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.opmode", i);
-        r+=hal_pin_s32_new(pin_name,HAL_OUT,&(JD[i].opmode),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.opmode-display", i);
-        r+=hal_pin_s32_new(pin_name,HAL_IN,&(JD[i].opmode_display),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.drv-actual-position", i);
-        r+=hal_pin_s32_new(pin_name,HAL_IN,&(JD[i].drv_actual_position),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.drv-actual-velocity", i);
-        r+=hal_pin_s32_new(pin_name,HAL_IN,&(JD[i].drv_actual_velocity),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.drv-target-position", i);
-        r+=hal_pin_s32_new(pin_name,HAL_OUT,&(JD[i].drv_target_position),comp_idx);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.drv-target-velocity", i);
-        r+=hal_pin_s32_new(pin_name,HAL_OUT,&(JD[i].drv_target_velocity),comp_idx);
-    }
-    return r;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
