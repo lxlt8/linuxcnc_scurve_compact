@@ -76,10 +76,11 @@ typedef struct {
     // Control pins, U32.
     hal_u32_t *var_opmode;
     hal_u32_t *var_max_torque;
-     // Control pins, S32.
+    // Control pins, S32.
     hal_s32_t *var_pos_scale;
     hal_s32_t *var_vel_scale;
     hal_s32_t *var_home_program;
+
 
     // Status pins, bit.
     hal_bit_t *stat_opmode_cyclic_position;
@@ -116,7 +117,12 @@ typedef struct {
     // Lcec connected pins, u32.
     hal_u32_t *statusword;
     hal_u32_t *controlword;
+    hal_u32_t *max_torque;
+    hal_u32_t *home_speed_zero_search;
+    hal_u32_t *home_speed_switch_search;
+    hal_u32_t *home_acceleration;
     // Lcec connected pins, s32.
+    hal_s32_t *homing_method;
     hal_s32_t *opmode;
     hal_s32_t *opmode_display;
     hal_s32_t *actual_position;
@@ -125,8 +131,6 @@ typedef struct {
     hal_s32_t *actual_following_error;
     hal_s32_t *target_position;
     hal_s32_t *target_velocity;
-    hal_u32_t *max_torque;
-    hal_s32_t *homing_method;
 
 } joint_data_t;
 

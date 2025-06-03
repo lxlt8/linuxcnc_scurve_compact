@@ -4,31 +4,32 @@
       <dcConf assignActivate="300" sync0Cycle="*1" sync0Shift="0"/>
       <sdoConfig idx="6093h" subIdx="1"><sdoDataRaw data="00 00 00 01"/></sdoConfig> <!-- P1.044 E-Gear ratio numerator (N1) = 16777216 -->
       <sdoConfig idx="6093h" subIdx="2"><sdoDataRaw data="20 A1 07 00"/></sdoConfig> <!-- P1.045 E-Gear ratio denominator (M) = 500 000 -->
+      
+      
       <syncManager idx="2" dir="out">
         <pdo idx="1600">
-          <pdoEntry idx="6040" subIdx="00" bitLen="16" halPin="cia-controlword" halType="u32"/>
-          <pdoEntry idx="6060" subIdx="00" bitLen="8" halPin="opmode" halType="s32"/>
-          <pdoEntry idx="6065" subIdx="00" bitLen="32" halPin="following-error-window" halType="u32"/>
-          <pdoEntry idx="607A" subIdx="00" bitLen="32" halPin="target-position" halType="s32"/>
-          <pdoEntry idx="60FF" subIdx="00" bitLen="32" halPin="target-velocity" halType="s32"/>
-          <pdoEntry idx="6072" subIdx="00" bitLen="16" halPin="max-torque" halType="u32"/>
-          <pdoEntry idx="6098" subIdx="00" bitLen="8" halPin="homing-method" halType="s32"/>  <!-- 0 - 35 methods Page:584 -->
-          <!--  <pdoEntry idx="6099" subIdx="00" bitLen="8" halPin="homing-speeds" halType="u32"/> --> 
-          <!--  <pdoEntry idx="6099" subIdx="01" bitLen="32" halPin="homing-speed-search-for-switch" halType="u32"/> --> <!-- Range:0-2000 Default:100 Page:593 -->
-          <!--  <pdoEntry idx="6099" subIdx="02" bitLen="32" halPin="homing-speed-search-for-zero" halType="u32"/> --> <!-- Range:0-500 Default:20 Page:593 -->
-          <!--  <pdoEntry idx="609A" subIdx="00" bitLen="32" halPin="homing-acceleration" halType="u32"/> --> <!-- Range:- Default:100 Page:593 -->
+          <pdoEntry idx="6040" subIdx="0" bitLen="16" halPin="cia-controlword" halType="u32"/>
+          <pdoEntry idx="6060" subIdx="0" bitLen="8" halPin="opmode" halType="s32"/>
+          <pdoEntry idx="6065" subIdx="0" bitLen="32" halPin="following-error-window" halType="u32"/>
+          <pdoEntry idx="607A" subIdx="0" bitLen="32" halPin="target-position" halType="s32"/>
+          <pdoEntry idx="60FF" subIdx="0" bitLen="32" halPin="target-velocity" halType="s32"/>
+          <pdoEntry idx="6072" subIdx="0" bitLen="16" halPin="max-torque" halType="u32"/>
+          <pdoEntry idx="6098" subIdx="0" bitLen="8" halPin="homing-method" halType="s32"/>  			<!-- 0 - 35 methods Page:584 -->
+          <pdoEntry idx="6099" subIdx="1" bitLen="32" halPin="home-speed-sw-search" halType="u32"/> 	<!-- Range:0-20000 Default:100 Page:711 -->
+          <pdoEntry idx="6099" subIdx="2" bitLen="32" halPin="home-speed-zero-search" halType="u32"/> 	<!-- Range:0-5000 Default:20 Page:711 -->
+          <pdoEntry idx="609A" subIdx="0" bitLen="32" halPin="home-acceleration" halType="u32"/> 		<!-- Default:100 Unit:ms Page:711 -->
         </pdo>
       </syncManager>
       <syncManager idx="3" dir="in">
         <pdo idx="1a00">
-          <pdoEntry idx="6041" subIdx="00" bitLen="16" halPin="cia-statusword" halType="u32"/>
-          <pdoEntry idx="6061" subIdx="00" bitLen="8" halPin="opmode-display" halType="s32"/>
-          <pdoEntry idx="6064" subIdx="00" bitLen="32" halPin="actual-position" halType="s32"/>
-          <pdoEntry idx="606C" subIdx="00" bitLen="32" halPin="actual-velocity" halType="s32"/>
-          <pdoEntry idx="6077" subIdx="00" bitLen="16" halPin="actual-torque" halType="s32"/>
-          <pdoEntry idx="60F4" subIdx="00" bitLen="32" halPin="actual-following-error" halType="s32"/> 
-          <pdoEntry idx="60FC" subIdx="00" bitLen="32" halPin="position-demand-value" halType="s32"/> 
-          <pdoEntry idx="2001" subIdx="00" bitLen="16" halPin="servo-alarm" halType="u32"/> 
+          <pdoEntry idx="6041" subIdx="0" bitLen="16" halPin="cia-statusword" halType="u32"/>
+          <pdoEntry idx="6061" subIdx="0" bitLen="8" halPin="opmode-display" halType="s32"/>
+          <pdoEntry idx="6064" subIdx="0" bitLen="32" halPin="actual-position" halType="s32"/>
+          <pdoEntry idx="606C" subIdx="0" bitLen="32" halPin="actual-velocity" halType="s32"/>
+          <pdoEntry idx="6077" subIdx="0" bitLen="16" halPin="actual-torque" halType="s32"/>
+          <pdoEntry idx="60F4" subIdx="0" bitLen="32" halPin="actual-following-error" halType="s32"/> 
+          <pdoEntry idx="60FC" subIdx="0" bitLen="32" halPin="position-demand-value" halType="s32"/> 
+          <pdoEntry idx="2001" subIdx="0" bitLen="16" halPin="servo-alarm" halType="u32"/> 
            
           <!--  <pdoEntry idx="60FD" subIdx="00" bitLen="32" halPin="digital-inputs" halType="u32"/> -->
         </pdo>

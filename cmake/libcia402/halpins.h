@@ -159,6 +159,18 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.controlword", i);
         r+=hal_pin_u32_new(pin_name,HAL_OUT,&(jd[i].controlword),comp_id);
 
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.max-torque", i);
+        r+=hal_pin_u32_new(pin_name,HAL_OUT,&(jd[i].max_torque),comp_id);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.home-speed-zero-search", i);
+        r+=hal_pin_u32_new(pin_name,HAL_IN,&(jd[i].home_speed_zero_search),comp_id);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.home-speed-sw-search", i);
+        r+=hal_pin_u32_new(pin_name,HAL_IN,&(jd[i].home_speed_switch_search),comp_id);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.home-acceleration", i);
+        r+=hal_pin_u32_new(pin_name,HAL_IN,&(jd[i].home_acceleration),comp_id);
+
         // S32 pins.
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.opmode-display", i);
         r+=hal_pin_s32_new(pin_name,HAL_IN,&(jd[i].opmode_display),comp_id);
@@ -183,9 +195,6 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
 
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.target-velocity", i);
         r+=hal_pin_s32_new(pin_name,HAL_OUT,&(jd[i].target_velocity),comp_id);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.max-torque", i);
-        r+=hal_pin_u32_new(pin_name,HAL_OUT,&(jd[i].max_torque),comp_id);
 
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.homing-method", i);
         r+=hal_pin_s32_new(pin_name,HAL_OUT,&(jd[i].homing_method),comp_id);
