@@ -4,8 +4,6 @@
       <dcConf assignActivate="300" sync0Cycle="*1" sync0Shift="0"/>
       <sdoConfig idx="6093h" subIdx="1"><sdoDataRaw data="00 00 00 01"/></sdoConfig> <!-- P1.044 E-Gear ratio numerator (N1) = 16777216 -->
       <sdoConfig idx="6093h" subIdx="2"><sdoDataRaw data="20 A1 07 00"/></sdoConfig> <!-- P1.045 E-Gear ratio denominator (M) = 500 000 -->
-      
-      
       <syncManager idx="2" dir="out">
         <pdo idx="1600">
           <pdoEntry idx="6040" subIdx="0" bitLen="16" halPin="cia-controlword" halType="u32"/>
@@ -15,9 +13,9 @@
           <pdoEntry idx="60FF" subIdx="0" bitLen="32" halPin="target-velocity" halType="s32"/>
           <pdoEntry idx="6072" subIdx="0" bitLen="16" halPin="max-torque" halType="u32"/>
           <pdoEntry idx="6098" subIdx="0" bitLen="8" halPin="homing-method" halType="s32"/>  			<!-- 0 - 35 methods Page:584 -->
-          <pdoEntry idx="6099" subIdx="1" bitLen="32" halPin="home-speed-sw-search" halType="u32"/> 	<!-- Range:0-20000 Default:100 Page:711 -->
-          <pdoEntry idx="6099" subIdx="2" bitLen="32" halPin="home-speed-zero-search" halType="u32"/> 	<!-- Range:0-5000 Default:20 Page:711 -->
-          <pdoEntry idx="609A" subIdx="0" bitLen="32" halPin="home-acceleration" halType="u32"/> 		<!-- Default:100 Unit:ms Page:711 -->
+          <!-- <pdoEntry idx="6099" subIdx="1" bitLen="32" halPin="home-speed-sw-search" halType="u32"/> --> <!-- Range:0-20000 Default:100 Page:711 -->
+          <!-- <pdoEntry idx="6099" subIdx="2" bitLen="32" halPin="home-speed-zero-search" halType="u32"/> --> <!-- Range:0-5000 Default:20 Page:711 -->
+          <!-- <pdoEntry idx="609A" subIdx="0" bitLen="32" halPin="home-acceleration" halType="u32"/> --> <!-- Default:100 Unit:ms Page:711 -->
         </pdo>
       </syncManager>
       <syncManager idx="3" dir="in">

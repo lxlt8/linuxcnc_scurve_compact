@@ -34,11 +34,11 @@ halcmd setp cia402.0.var-max-torque				100
 # 33	= Home cw  to index pulse
 # 34    = Home ccw to index pulse
 # -3    = Home cw to hard stop, set P1.087->Torque homing Page 351 & P1.088->Torque homing - level reached timer.
-halcmd setp cia402.0.var-home-program			-33		
+halcmd setp cia402.0.var-home-program			33		
 
-halcmd setp cia402.0.home-speed-sw-search		100
-halcmd setp cia402.0.home-speed-zero-search		20
-halcmd setp cia402.0.home-acceleration			100
+#halcmd setp cia402.0.home-speed-sw-search		100
+#halcmd setp cia402.0.home-speed-zero-search	20
+#halcmd setp cia402.0.home-acceleration			100
 
 #from servo(ethercat) to cia402
 halcmd net x-statusword 			lcec.0.0.cia-statusword 			cia402.0.statusword
@@ -55,9 +55,9 @@ halcmd net x-drv-target-pos 		cia402.0.target-position 			lcec.0.0.target-positi
 halcmd net x-drv-target-velo 		cia402.0.target-velocity 			lcec.0.0.target-velocity
 halcmd net x-drv-max-torque 		cia402.0.max-torque 				lcec.0.0.max-torque 			
 halcmd net x-homing-method        	cia402.0.homing-method          	lcec.0.0.homing-method	
-halcmd net x-home-speed-zero-search cia402.0.home-speed-zero-search  	lcec.0.0.home-speed-zero-search
-halcmd net x-home-speed-sw-search   cia402.0.home-speed-sw-search 		lcec.0.0.home-speed-sw-search  
-halcmd net x-home-acceleration      cia402.0.home-acceleration  		lcec.0.0.home-acceleration    
+#halcmd net x-home-speed-zero-search cia402.0.home-speed-zero-search  	lcec.0.0.home-speed-zero-search
+#halcmd net x-home-speed-sw-search   cia402.0.home-speed-sw-search 		lcec.0.0.home-speed-sw-search  
+#halcmd net x-home-acceleration      cia402.0.home-acceleration  		lcec.0.0.home-acceleration    
 
 halcmd start
 halshow
