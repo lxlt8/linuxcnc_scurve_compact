@@ -51,6 +51,10 @@ struct home_struct {
     enum enum_drive_home_state hs;
     double delay;
     int home_busy_message;
+    hal_float_t pos_cmd_snapshot;
+    hal_float_t pos_cmd_offset;
+    hal_float_t pos_fb_snapshot;
+    hal_float_t pos_fb_offset;
 };
 
 typedef struct {
@@ -70,6 +74,7 @@ typedef struct {
     hal_float_t *pos_cmd;
     hal_float_t *vel_cmd;
     hal_float_t *pos_fb;
+    hal_float_t *pos_fb_raw;
     hal_float_t *vel_fb;
     hal_float_t *pos_offset;
 
@@ -80,7 +85,6 @@ typedef struct {
     hal_s32_t *var_pos_scale;
     hal_s32_t *var_vel_scale;
     hal_s32_t *var_home_program;
-
 
     // Status pins, bit.
     hal_bit_t *stat_opmode_cyclic_position;
@@ -112,7 +116,6 @@ typedef struct {
     hal_bit_t *stat_drv_fault;
     // Status pins, float.
     hal_float_t *stat_runtime;
-    hal_float_t *stat_pos_offset;
 
     // Lcec connected pins, u32.
     hal_u32_t *statusword;

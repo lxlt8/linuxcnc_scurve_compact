@@ -136,9 +136,6 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-runtime", i);
         r+=hal_pin_float_new(pin_name,HAL_OUT,&(jd[i].stat_runtime),comp_id);
 
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-pos-offset", i);
-        r+=hal_pin_float_new(pin_name,HAL_OUT,&(jd[i].stat_pos_offset),comp_id);
-
         if(r==0){
             printf("\t status pins succes. \n");
         } else {
@@ -224,6 +221,9 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
 
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.pos-fb", i);
         r+=hal_pin_float_new(pin_name,HAL_OUT,&(jd[i].pos_fb),comp_id);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.pos-fb-raw", i);
+        r+=hal_pin_float_new(pin_name,HAL_OUT,&(jd[i].pos_fb_raw),comp_id);
 
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.vel-cmd", i);
         r+=hal_pin_float_new(pin_name,HAL_IN,&(jd[i].vel_cmd),comp_id);

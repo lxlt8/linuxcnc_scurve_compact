@@ -13,7 +13,8 @@ static void read_drive_status(joint_data_t *joint) {
     *joint->stat_runtime += 0.001;
 
     // Get pos & vel feedback.
-    *joint->pos_fb = (double)(*joint->actual_position) * (1/(double)(*joint->var_pos_scale));
+    *joint->pos_fb_raw = ((double)(*joint->actual_position) * (1/(double)(*joint->var_pos_scale)));
+    *joint->pos_fb = *joint->pos_cmd; // *joint->pos_fb_raw + joint->home_struct.pos_fb_offset;
     *joint->vel_fb = (double)(*joint->actual_velocity) * (1/(double)(*joint->var_vel_scale));
 
     // Read Modes of Operation

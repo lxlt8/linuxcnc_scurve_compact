@@ -20,7 +20,7 @@ static void drive_check_scales(joint_data_t *joint){
 
 // Write position command
 static void drive_write_position(joint_data_t *joint){
-    *joint->target_position = (hal_s32_t)( (*joint->pos_cmd + *joint->pos_offset) * (*joint->var_pos_scale) );
+    *joint->target_position = (hal_s32_t)( (*joint->pos_cmd + *joint->pos_offset + joint->home_struct.pos_cmd_offset) * (*joint->var_pos_scale) );
 }
 
 // Write velocity command
@@ -94,6 +94,10 @@ static void drive_home(joint_data_t *joint){
         joint->home_struct.hs = HOME_DELAY;
         joint->home_struct.delay = 0;
         joint->home_struct.home_busy_message = 0;
+        joint->home_struct.pos_cmd_snapshot = *joint->pos_cmd;
+        joint->home_struct.pos_fb_snapshot = *joint->pos_fb_raw;
+        joint->home_struct.pos_cmd_offset = 0;
+        joint->home_struct.pos_fb_offset = 0;
         *joint->stat_homing=1;
         *joint->stat_homed=0;
         break;
@@ -112,9 +116,6 @@ static void drive_home(joint_data_t *joint){
             joint->home_struct.hs = HOME_FINISHED;
         } else {
             joint->home_struct.hs = HOME_BUSY;
-            *joint->pos_offset=*joint->pos_fb - *joint->pos_cmd;
-            *joint->pos_cmd = 0;
-            *joint->pos_fb = 0;
         }
         break;
     case HOME_FINISHED:
@@ -123,12 +124,13 @@ static void drive_home(joint_data_t *joint){
         joint->runmode = RUN_NONE;
         // Set opmode back to position.
         drive_set_homed(joint);
-        joint->stat_pos_offset =  0;
-        *joint->pos_offset=*joint->pos_fb - *joint->pos_cmd;
-        *joint->pos_cmd = 0;
-        *joint->pos_fb = 0;
+
         *joint->stat_homing=0;
         *joint->stat_homed=1;
+
+        joint->home_struct.pos_cmd_offset =- joint->home_struct.pos_cmd_snapshot;
+        *joint->pos_offset = 0;
+
         break;
     default:
         break;

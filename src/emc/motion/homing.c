@@ -127,6 +127,7 @@ static  home_local_data H[EMCMOT_MAX_JOINTS];
 
 // data for per-joint homing-specific hal pins:
 typedef struct {
+    hal_bit_t *reset_motor_offset;  // reset motor offset to zero.
     hal_bit_t *home_sw;      // home switch input
     hal_bit_t *homing;       // joint is homing
     hal_bit_t *homed;        // joint was homed
@@ -251,6 +252,8 @@ static int base_make_joint_home_pins(int id,int njoints)
                                   "joint.%d.home-state", jno);
         retval += hal_pin_bit_newf(HAL_IO, &(addr->index_enable), id,
                                   "joint.%d.index-enable", jno);
+        retval += hal_pin_bit_newf(HAL_IN, &(addr->reset_motor_offset), id,
+                                  "joint.%d.reset-motor-offset", jno);
     }
     return retval;
 } // base_make_joint_home_pins()
@@ -728,6 +731,21 @@ static int base_1joint_state_machine(int joint_num)
 
     if (H[joint_num].home_state != HOME_IDLE) {
         homing_flag = 1; /* at least one joint is homing */
+    }
+
+    // Reset joint motor offset by hal input pin.
+    if(*joint_home_data->jhd[joint_num].reset_motor_offset){
+
+        // joint->motor_pos_cmd=0;
+        // joint->motor_pos_fb=0;
+        // H[joint_num].home_state = HOME_FINISHED;
+
+        joint->pos_cmd =0;
+        joint->pos_fb =0;
+        joint->free_tp.curr_pos =0;
+        joint->motor_offset =0;
+
+        return 0;
     }
 
     /* when a joint is homing, 'check_for_faults()' ignores its limit

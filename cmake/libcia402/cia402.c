@@ -87,6 +87,11 @@ int rtapi_app_main(void) {
 }
 
 void rtapi_app_exit(void) {
+
+    for(int i = 0; i < count; i++) {
+        joint_data_t *joint = &jd[i];
+        drive_shutdown(joint);
+    }
     if(jd) {
         // hal_free(jd);
         jd = NULL;
@@ -196,8 +201,6 @@ static void write_all() {
     for(int i = 0; i < count; i++) {
         joint_data_t *joint = &jd[i];
 
-        read_drive_status(joint);
-
         if(*joint->enable){
             drive_state_machine(joint);
             drive_write_position(joint);
@@ -206,7 +209,8 @@ static void write_all() {
 
         } else {
             drive_shutdown(joint);
-            *joint->pos_offset = *joint->pos_fb - *joint->pos_cmd;
+            *joint->pos_offset = *joint->pos_fb_raw - *joint->pos_cmd;
+            joint->home_struct.pos_cmd_offset = 0;
         }
     }
 }
