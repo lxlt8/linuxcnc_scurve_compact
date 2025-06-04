@@ -1,0 +1,10 @@
+#!/bin/bash
+
+CONFIG="../cmake/configs/axis_delta/axis_delta.ini"
+cd ..
+cd ..
+cd scripts
+. ./rip-environment
+linuxcnc $CONFIG
+
+
