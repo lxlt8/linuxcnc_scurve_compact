@@ -51,10 +51,6 @@ struct home_struct {
     enum enum_drive_home_state hs;
     double delay;
     int home_busy_message;
-    hal_float_t pos_cmd_snapshot;
-    hal_float_t pos_cmd_offset;
-    hal_float_t pos_fb_snapshot;
-    hal_float_t pos_fb_offset;
 };
 
 typedef struct {
@@ -71,14 +67,13 @@ typedef struct {
     hal_bit_t *home;
     hal_bit_t *index_enable;
     hal_bit_t *index_enable_clear;
+    hal_bit_t *home_torque_enable;
 
     // Control pins, float.
     hal_float_t *pos_cmd;
     hal_float_t *vel_cmd;
     hal_float_t *pos_fb;
-    hal_float_t *pos_fb_raw;
     hal_float_t *vel_fb;
-    hal_float_t *pos_offset;
 
     // Control pins, U32.
     hal_u32_t *var_opmode;

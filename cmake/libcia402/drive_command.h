@@ -20,7 +20,7 @@ static void drive_check_scales(joint_data_t *joint){
 
 // Write position command
 static void drive_write_position(joint_data_t *joint){
-    *joint->target_position = (hal_s32_t)( (*joint->pos_cmd + *joint->pos_offset + joint->home_struct.pos_cmd_offset) * (*joint->var_pos_scale) );
+    *joint->target_position = (hal_s32_t)( (*joint->pos_cmd) * (*joint->var_pos_scale) );
 }
 
 // Write velocity command
@@ -30,7 +30,15 @@ static void drive_write_velocity(joint_data_t *joint){
 
 // Write torque command
 static void drive_write_torque(joint_data_t *joint){
-    *joint->max_torque = *joint->var_max_torque;
+
+    // Lower torque when searching for index pulse.
+    // Lower torque when linuxcnc is doing a home sequence.
+    if(*joint->index_enable || *joint->home_torque_enable){
+         *joint->max_torque = *joint->var_max_torque_home_stop;
+    } else {
+        // At runtime, normal:
+        *joint->max_torque = *joint->var_max_torque;
+    }
 }
 
 // Function to write shutdown to the drive.
@@ -94,10 +102,6 @@ static void drive_home(joint_data_t *joint){
         joint->home_struct.hs = HOME_DELAY;
         joint->home_struct.delay = 0;
         joint->home_struct.home_busy_message = 0;
-        joint->home_struct.pos_cmd_snapshot = *joint->pos_cmd;
-        joint->home_struct.pos_fb_snapshot = *joint->pos_fb_raw;
-        joint->home_struct.pos_cmd_offset = 0;
-        joint->home_struct.pos_fb_offset = 0;
         *joint->stat_homing=1;
         *joint->stat_homed=0;
         break;
@@ -110,7 +114,6 @@ static void drive_home(joint_data_t *joint){
         if(joint->home_struct.delay>home_delay){
             joint->home_struct.hs = HOME_BUSY;
         }
-        // joint->home_struct.pos_fb_offset =  *joint->pos_fb_raw - joint->home_struct.pos_fb_snapshot;
         break;
     case HOME_BUSY:
         if(*joint->stat_bit_12 && *joint->stat_target_reached || *joint->var_home_program==0){
@@ -118,7 +121,6 @@ static void drive_home(joint_data_t *joint){
         } else {
             joint->home_struct.hs = HOME_BUSY;
         }
-        // joint->home_struct.pos_fb_offset = *joint->pos_fb_raw - joint->home_struct.pos_fb_snapshot;
         break;
     case HOME_FINISHED:
         printf("home finished joint: %d \n",joint->joint_nr);

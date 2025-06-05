@@ -17,16 +17,16 @@ halcmd loadrt threads name1=servo-thread fp1=0 period1=1000000
 
 halcmd loadusr -W lcec_conf /home/user/linuxcnc_distro_files/linuxcnc/cmake/libcia402/ethercat-conf.xml
 halcmd loadrt lcec 
-halcmd loadrt cia402 count=1
+halcmd loadrt cia402 count=1					# Number of servo drives.
 
 halcmd addf lcec.read-all servo-thread
 halcmd addf cia402.read-all servo-thread
 halcmd addf cia402.write-all servo-thread
 halcmd addf lcec.write-all servo-thread
 
-halcmd setp cia402.0.var-opmode			   	 	8		# 0=None, 8=Position, 9=Velocity, 6=Home.
-halcmd setp cia402.0.var-pos-scale 		    	100000
-halcmd setp cia402.0.var-vel-scale 				1
+halcmd setp cia402.0.var-opmode					8		# 0=None, 8=Position, 9=Velocity, 6=Home.
+halcmd setp cia402.0.var-pos-scale				100000
+halcmd setp cia402.0.var-vel-scale				1
 halcmd setp cia402.0.var-max-torque				100
 halcmd setp cia402.0.var-max-torque-home-stop	75 
 
@@ -37,11 +37,7 @@ halcmd setp cia402.0.var-max-torque-home-stop	75
 # -3    = Home cw to hard stop, set P1.087->Torque homing Page 351 & P1.088->Torque homing - level reached timer.
 halcmd setp cia402.0.var-home-program			33		
 
-#halcmd setp cia402.0.home-speed-sw-search		100
-#halcmd setp cia402.0.home-speed-zero-search	20
-#halcmd setp cia402.0.home-acceleration			100
-
-#from servo(ethercat) to cia402
+# From servo(ethercat) to cia402
 halcmd net x-statusword 			lcec.0.0.cia-statusword 			cia402.0.statusword
 halcmd net x-opmode-display 		lcec.0.0.opmode-display 			cia402.0.opmode-display
 halcmd net x-drv-act-pos 			lcec.0.0.actual-position 			cia402.0.actual-position
@@ -49,22 +45,16 @@ halcmd net x-drv-act-velo 			lcec.0.0.actual-velocity 			cia402.0.actual-velocit
 halcmd net x-actual-torque   		lcec.0.0.actual-torque      		cia402.0.actual-torque
 halcmd net x-actual-following-error	lcec.0.0.actual-following-error 	cia402.0.actual-following-error
 
-#from cia402 to servo(ethercat) 
+# From cia402 to servo(ethercat) 
 halcmd net x-controlword 			cia402.0.controlword 				lcec.0.0.cia-controlword
 halcmd net x-modes-of-operation 	cia402.0.opmode 			    	lcec.0.0.opmode
 halcmd net x-drv-target-pos 		cia402.0.target-position 			lcec.0.0.target-position
 halcmd net x-drv-target-velo 		cia402.0.target-velocity 			lcec.0.0.target-velocity
 halcmd net x-drv-max-torque 		cia402.0.max-torque 				lcec.0.0.max-torque 			
-halcmd net x-homing-method        	cia402.0.homing-method          	lcec.0.0.homing-method	
-#halcmd net x-home-speed-zero-search cia402.0.home-speed-zero-search  	lcec.0.0.home-speed-zero-search
-#halcmd net x-home-speed-sw-search   cia402.0.home-speed-sw-search 		lcec.0.0.home-speed-sw-search  
-#halcmd net x-home-acceleration      cia402.0.home-acceleration  		lcec.0.0.home-acceleration    
-
-halcmd net x-home-switch		    cia402.0.stat-torque-home-stop		joint.0.home-sw-in	
+halcmd net x-homing-method        	cia402.0.homing-method          	lcec.0.0.homing-method	  
 
 halcmd start
+# Open halshow to monotor pins.
 halshow
+# Clean environment.
 halrun -U
-
-# To clean the hal environment :
-# ~/linuxcnc/scripts/halrun -U

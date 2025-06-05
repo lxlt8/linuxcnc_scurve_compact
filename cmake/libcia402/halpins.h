@@ -215,6 +215,9 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.home", i);
         r+= hal_pin_bit_new(pin_name, HAL_IN, &(jd[i].home), comp_id);
 
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.home-torque-enable", i);
+        r+= hal_pin_bit_new(pin_name, HAL_IN, &(jd[i].home_torque_enable), comp_id);
+
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.index-enable", i);
         r+= hal_pin_bit_new(pin_name, HAL_IO, &(jd[i].index_enable), comp_id);
 
@@ -228,17 +231,11 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.pos-fb", i);
         r+=hal_pin_float_new(pin_name,HAL_OUT,&(jd[i].pos_fb),comp_id);
 
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.pos-fb-raw", i);
-        r+=hal_pin_float_new(pin_name,HAL_OUT,&(jd[i].pos_fb_raw),comp_id);
-
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.vel-cmd", i);
         r+=hal_pin_float_new(pin_name,HAL_IN,&(jd[i].vel_cmd),comp_id);
 
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.vel-fb", i);
         r+=hal_pin_float_new(pin_name,HAL_OUT,&(jd[i].vel_fb),comp_id);
-
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.pos-offset", i);
-        r+=hal_pin_float_new(pin_name,HAL_OUT,&(jd[i].pos_offset),comp_id);
 
         // U32 pins.
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.var-opmode", i);
