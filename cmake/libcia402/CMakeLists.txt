@@ -64,5 +64,6 @@ install(TARGETS ${PROJECT} DESTINATION ${SRC_DIR}/../../rtlib)
 
 # Ensure README.md is part of the project
 configure_file(${CMAKE_SOURCE_DIR}/README.md ${CMAKE_BINARY_DIR}/README.md COPYONLY)
+
 # Notes.
 

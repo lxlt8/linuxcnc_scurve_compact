@@ -1,8 +1,8 @@
-# Libcia402
+# Cia402
 
 ## Hal component for ethercat servo drives using the Cia402 protocoll.
 
-Feaures:
+Features:
 - Position mode.
 - Home mode.
 - Servo drive home sequence.
@@ -39,7 +39,7 @@ Halfile example : ~/linuxcnc/cmake/configs/axis_delta
 
 ## Tests
 
-Tested on a Sponsored single Delta ASDA B3 servo drive. 
+Tested on a sponsored single Delta-ASDA-B3 servo drive. 
 
 ## Language
 
