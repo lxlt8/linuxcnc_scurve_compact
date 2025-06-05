@@ -1,6 +1,7 @@
 #ifndef DRIVE_STATUS_H
 #define DRIVE_STATUS_H
 
+#include "math.h"
 #include "hal.h"
 #include "halsection.h"
 
@@ -14,7 +15,8 @@ static void read_drive_status(joint_data_t *joint) {
 
     // Get pos & vel feedback.
     *joint->pos_fb_raw = ((double)(*joint->actual_position) * (1/(double)(*joint->var_pos_scale)));
-    *joint->pos_fb = *joint->pos_cmd; // *joint->pos_fb_raw + joint->home_struct.pos_fb_offset;
+    *joint->pos_fb = *joint->pos_fb_raw + joint->home_struct.pos_fb_offset;
+    // *joint->pos_fb = *joint->pos_fb_raw;
     *joint->vel_fb = (double)(*joint->actual_velocity) * (1/(double)(*joint->var_vel_scale));
 
     // Read Modes of Operation
@@ -76,6 +78,38 @@ static void read_drive_status(joint_data_t *joint) {
     if(!bit0 && !bit1 && !bit2 && bit3 && !bit6){
         joint->drive_state = SERVO_FAULT;
     }
+
+    if(fabs(*joint->actual_torque) >= fabs(*joint->var_max_torque_home_stop)){   
+        joint->torque_timer_enable = 1;
+        joint->torque_timer = 0;
+        *joint->stat_torque_home_stop = 1;
+    }
+
+    if(joint->torque_timer_enable){
+        joint->torque_timer += 1;
+        // printf("timer: %f \n",joint->torque_timer);
+    }
+
+    if(joint->torque_timer > *joint->var_torque_release_delay_ms){
+        // printf("timer completed. \n");
+        *joint->stat_torque_home_stop = 0;
+        joint->torque_timer_enable = 0;
+    }
+
+    if(*joint->index_enable_clear){
+        *joint->index_enable = 0;
+        // printf("index enable cleared. \n");
+    }
 }
 
 #endif // DRIVE_STATUS_H
+
+
+
+
+
+
+
+
+
+

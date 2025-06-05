@@ -110,6 +110,7 @@ static void drive_home(joint_data_t *joint){
         if(joint->home_struct.delay>home_delay){
             joint->home_struct.hs = HOME_BUSY;
         }
+        // joint->home_struct.pos_fb_offset =  *joint->pos_fb_raw - joint->home_struct.pos_fb_snapshot;
         break;
     case HOME_BUSY:
         if(*joint->stat_bit_12 && *joint->stat_target_reached || *joint->var_home_program==0){
@@ -117,6 +118,7 @@ static void drive_home(joint_data_t *joint){
         } else {
             joint->home_struct.hs = HOME_BUSY;
         }
+        // joint->home_struct.pos_fb_offset = *joint->pos_fb_raw - joint->home_struct.pos_fb_snapshot;
         break;
     case HOME_FINISHED:
         printf("home finished joint: %d \n",joint->joint_nr);
@@ -128,8 +130,8 @@ static void drive_home(joint_data_t *joint){
         *joint->stat_homing=0;
         *joint->stat_homed=1;
 
-        joint->home_struct.pos_cmd_offset =- joint->home_struct.pos_cmd_snapshot;
-        *joint->pos_offset = 0;
+        *joint->index_enable = 0;
+        joint->index_enable_trigger = 0;
 
         break;
     default:

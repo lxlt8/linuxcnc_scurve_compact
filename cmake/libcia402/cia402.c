@@ -105,7 +105,6 @@ void drive_run(joint_data_t *joint){
     // Check for inputs.
     if(*joint->home){
         printf("home request. \n");
-
         joint->runmode = RUN_HOME;
         joint->home_struct.hs = HOME_INIT;
         *joint->home=0;
@@ -207,10 +206,17 @@ static void write_all() {
             drive_write_velocity(joint);
             drive_write_torque(joint);
 
+            // Check for home-index pin.
+            if(*joint->index_enable && !joint->index_enable_trigger){
+                printf("home on index request. \n");
+                joint->runmode = RUN_HOME;
+                joint->home_struct.hs = HOME_INIT;
+                joint->index_enable_trigger=1;
+            }
+
         } else {
             drive_shutdown(joint);
-            *joint->pos_offset = *joint->pos_fb_raw - *joint->pos_cmd;
-            joint->home_struct.pos_cmd_offset = 0;
+            joint->index_enable_trigger = 0;
         }
     }
 }

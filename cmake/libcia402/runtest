@@ -28,6 +28,7 @@ halcmd setp cia402.0.var-opmode			   	 	8		# 0=None, 8=Position, 9=Velocity, 6=H
 halcmd setp cia402.0.var-pos-scale 		    	100000
 halcmd setp cia402.0.var-vel-scale 				1
 halcmd setp cia402.0.var-max-torque				100
+halcmd setp cia402.0.var-max-torque-home-stop	75 
 
 # Home program. Page 802.
 # 0		= Default
@@ -58,6 +59,8 @@ halcmd net x-homing-method        	cia402.0.homing-method          	lcec.0.0.hom
 #halcmd net x-home-speed-zero-search cia402.0.home-speed-zero-search  	lcec.0.0.home-speed-zero-search
 #halcmd net x-home-speed-sw-search   cia402.0.home-speed-sw-search 		lcec.0.0.home-speed-sw-search  
 #halcmd net x-home-acceleration      cia402.0.home-acceleration  		lcec.0.0.home-acceleration    
+
+halcmd net x-home-switch		    cia402.0.stat-torque-home-stop		joint.0.home-sw-in	
 
 halcmd start
 halshow

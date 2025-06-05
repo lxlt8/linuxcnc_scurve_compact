@@ -120,9 +120,6 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-bit-13", i);
         r+=hal_pin_bit_new(pin_name,HAL_OUT,&(jd[i].stat_bit_13),comp_id);
 
-        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-virtual-home-switch", i);
-        r+= hal_pin_bit_new(pin_name, HAL_OUT, &(jd[i].stat_virtual_home_switch), comp_id);
-
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-homing", i);
         r+= hal_pin_bit_new(pin_name, HAL_OUT, &(jd[i].stat_homing), comp_id);
 
@@ -131,6 +128,9 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
 
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-drv-fault", i);
         r+=hal_pin_bit_new(pin_name,HAL_OUT,&(jd[i].stat_drv_fault),comp_id);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-torque-home-stop", i);
+        r+=hal_pin_bit_new(pin_name,HAL_OUT,&(jd[i].stat_torque_home_stop),comp_id);
 
         // Float pins.
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.stat-runtime", i);
@@ -215,6 +215,12 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.home", i);
         r+= hal_pin_bit_new(pin_name, HAL_IN, &(jd[i].home), comp_id);
 
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.index-enable", i);
+        r+= hal_pin_bit_new(pin_name, HAL_IO, &(jd[i].index_enable), comp_id);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.index-enable-clear", i);
+        r+= hal_pin_bit_new(pin_name, HAL_IN, &(jd[i].index_enable_clear), comp_id);
+
         // Float pins.
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.pos-cmd", i);
         r+=hal_pin_float_new(pin_name,HAL_IN,&(jd[i].pos_cmd),comp_id);
@@ -241,6 +247,9 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.var-max-torque", i);
         r+=hal_pin_u32_new(pin_name,HAL_IN,&(jd[i].var_max_torque),comp_id);
 
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.var-torque-release-delay-ms", i);
+        r+=hal_pin_u32_new(pin_name,HAL_IN,&(jd[i].var_torque_release_delay_ms),comp_id);
+
         // S32 pins.
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.var-home-program", i);
         r+=hal_pin_s32_new(pin_name,HAL_IN,&(jd[i].var_home_program),comp_id);
@@ -250,6 +259,9 @@ static int setup_pins(joint_data_t *jd, int count, int comp_id){
 
         snprintf(pin_name, sizeof(pin_name), "cia402.%d.var-vel-scale", i);
         r+=hal_pin_s32_new(pin_name,HAL_IN,&(jd[i].var_vel_scale),comp_id);
+
+        snprintf(pin_name, sizeof(pin_name), "cia402.%d.var-max-torque-home-stop", i);
+        r+=hal_pin_s32_new(pin_name,HAL_IN,&(jd[i].var_max_torque_home_stop),comp_id);
 
         if(r==0){
             printf("\t control pins succes. \n");

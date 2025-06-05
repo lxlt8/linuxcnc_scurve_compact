@@ -73,16 +73,16 @@ sudo make install
 cd ../..
 
 # Homing component "homeextern.so"
-#echo "+---------------------------------------------------------------+"
-#echo "|                     homecia402.so                          |"
-#echo "+---------------------------------------------------------------+"
-#cd libhomecia402
-#mkdir -p build
-#cd build
-#eval $BUILDER
-#make -j`nproc`
-#sudo make install
-#cd ../..
+echo "+---------------------------------------------------------------+"
+echo "|                     homecia402.so                          |"
+echo "+---------------------------------------------------------------+"
+cd libhomecia402
+mkdir -p build
+cd build
+eval $BUILDER
+make -j`nproc`
+sudo make install
+cd ../..
 
 # Motion planner realtime component "libclothoid3d.so"
 echo "+---------------------------------------------------------------+"

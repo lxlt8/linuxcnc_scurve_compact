@@ -69,6 +69,8 @@ typedef struct {
     // Control pins, bit.
     hal_bit_t *enable;
     hal_bit_t *home;
+    hal_bit_t *index_enable;
+    hal_bit_t *index_enable_clear;
 
     // Control pins, float.
     hal_float_t *pos_cmd;
@@ -81,10 +83,17 @@ typedef struct {
     // Control pins, U32.
     hal_u32_t *var_opmode;
     hal_u32_t *var_max_torque;
+    hal_u32_t *var_torque_release_delay_ms;
+    // Var.
+    float torque_timer;
+    // Var bit.
+    hal_bit_t torque_timer_enable;
+    hal_bit_t index_enable_trigger;
     // Control pins, S32.
     hal_s32_t *var_pos_scale;
     hal_s32_t *var_vel_scale;
     hal_s32_t *var_home_program;
+    hal_s32_t *var_max_torque_home_stop;
 
     // Status pins, bit.
     hal_bit_t *stat_opmode_cyclic_position;
@@ -110,10 +119,10 @@ typedef struct {
     hal_bit_t *stat_bit_11;
     hal_bit_t *stat_bit_12;
     hal_bit_t *stat_bit_13;
-    hal_bit_t *stat_virtual_home_switch;
     hal_bit_t *stat_homing;
     hal_bit_t *stat_homed;
     hal_bit_t *stat_drv_fault;
+    hal_bit_t *stat_torque_home_stop;
     // Status pins, float.
     hal_float_t *stat_runtime;
 
