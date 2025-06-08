@@ -1,4 +1,4 @@
-# Homecia402
+# Homemod_extern
 
 ## Hal component for linuxcnc homing.
 Homecia402.so is a linuxcnc hal component like homemod.so.
@@ -11,10 +11,10 @@ hal_bit_pin, type IN
 
 ## Features
 
-- Home extern aborts the latch_vel search where it looks for home switch release. homingcia402.c, line 1097.
-- Home extern aborts moving checks when at latch_vel search for home switch release. homingcia402.c, line 1132.
-- Home extern aborts moving checks when searching for index pulse. homingcia402.c, line 1219. line 1242.
-- Home extern sets the `joint->pos_cmd` and the `joint->free_tp.curr_pos` to servo `joint->pos_fb`, homingcia402.c, line 1245.
+- Home extern aborts the latch_vel search where it looks for home switch release. homing402.c, line 1097.
+- Home extern aborts moving checks when at latch_vel search for home switch release. homing402.c, line 1132.
+- Home extern aborts moving checks when searching for index pulse. homing.c, line 1219. line 1242.
+- Home extern sets the `joint->pos_cmd` and the `joint->free_tp.curr_pos` to servo `joint->pos_fb`, homing.c, line 1245.
 
 ## Tests
 
@@ -34,7 +34,7 @@ Tested on a Sponsored single Delta ASDA B3 servo drive.
 
 ```bash
 [EMCMOT]
-HOMEMOD = homecia402
+HOMEMOD = homemod_extern
 
 [JOINT_0]
 TYPE = LINEAR

@@ -31,9 +31,9 @@ add_definitions(-DRTAPI -D_GNU_SOURCE -D__MODULE__ )
 
 ADD_LIBRARY(${PROJECT} SHARED
     ${SRC_DIR}/../../src/emc/motion/simple_tp.h
-    ${SRC_DIR}/homecia402.c
+    ${SRC_DIR}/home.c
     ${SRC_DIR}/../../src/emc/motion/homing.h
-    ${SRC_DIR}/homingcia402.c
+    ${SRC_DIR}/homing.c
     ${SRC_DIR}/../../src/emc/motion/motion.h
 )
 
