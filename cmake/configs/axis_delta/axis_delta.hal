@@ -1,37 +1,19 @@
-###########################################################
-#
-# CIA 402 example snippet Hal 
-#
-###########################################################
-
-###########################################################
-# Setup
-###########################################################
+# Hal configuration for a lcec delta-asda-b3 servo drive.
+# Using external homing-program, homing on servo's index pulse.
 
 loadrt [KINS]KINEMATICS
 loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS 
-
 loadusr -W lcec_conf ethercat-conf-delta.xml
 loadrt lcec
 
-###########################################################
-# Functions servo-thread
-###########################################################
-
 addf lcec.read-all servo-thread
-
 addf motion-command-handler servo-thread
 addf motion-controller servo-thread
-
 addf lcec.write-all servo-thread
 
-#########################################
-#nets
-#########################################
 net emc-enable => iocontrol.0.emc-enable-in
 sets emc-enable 1
 
-#x-axis
 setp lcec.0.delta_b3.var-opmode            			8      		# 0=None, 8=Position, 9=Velocity, 6=Home.
 setp lcec.0.delta_b3.var-pos-scale					100000
 setp lcec.0.delta_b3.var-vel-scale					1
@@ -41,7 +23,6 @@ setp lcec.0.delta_b3.var-torque-release-delay-ms	2000		# Time in ms the home tor
 setp lcec.0.delta_b3.var-home-program				33    		# 33=Home to z pulse. ? Use 34 for inverted direction.
 setp joint.0.home-extern							1           # Use extern homing for homemod_extern.so	
 
-# From motion to cia
 net x-enable    					joint.0.amp-enable-out 				lcec.0.delta_b3.enable
 net x-amp-fault 			 		joint.0.amp-fault-in   				lcec.0.delta_b3.stat-fault
 net x-pos-cmd  	 					joint.0.motor-pos-cmd  				lcec.0.delta_b3.pos-cmd
