@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-set(PROJECT "homecia402")
+set(PROJECT "homemod_extern")
 project(${PROJECT} CXX C)
 
 # Set variables.

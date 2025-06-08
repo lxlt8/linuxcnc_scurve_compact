@@ -74,7 +74,7 @@ cd ../..
 
 # Homing component "homeextern.so"
 echo "+---------------------------------------------------------------+"
-echo "|                     libhome-extern.so                          |"
+echo "|                     homemod-extern.so                          |"
 echo "+---------------------------------------------------------------+"
 cd libhome-extern
 mkdir -p build

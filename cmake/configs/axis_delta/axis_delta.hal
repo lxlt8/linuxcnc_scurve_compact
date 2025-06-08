@@ -33,13 +33,13 @@ sets emc-enable 1
 
 #x-axis
 setp lcec.0.delta_b3.var-opmode            			8      		# 0=None, 8=Position, 9=Velocity, 6=Home.
-setp lcec.0.delta_b3.var-pos-scale 					100000
-setp lcec.0.delta_b3.var-vel-scale 					1
-setp lcec.0.delta_b3.var-max-torque        			125			# Used motor torque at runtime.
+setp lcec.0.delta_b3.var-pos-scale					100000
+setp lcec.0.delta_b3.var-vel-scale					1
+setp lcec.0.delta_b3.var-max-torque					125			# Used motor torque at runtime.
 setp lcec.0.delta_b3.var-max-torque-home-stop		100			# Triggers pin when torque is at value.
-setp lcec.0.delta_b3.var-torque-release-delay-ms		2000		# Time in ms the home torque trigger stays up.
-setp lcec.0.delta_b3.var-home-program      			33    		# 33=Home to z pulse. ? Use 34 for inverted direction.
-setp joint.0.home-extern                				1           # Use extern homing for homemod.so	
+setp lcec.0.delta_b3.var-torque-release-delay-ms	2000		# Time in ms the home torque trigger stays up.
+setp lcec.0.delta_b3.var-home-program				33    		# 33=Home to z pulse. ? Use 34 for inverted direction.
+setp joint.0.home-extern							1           # Use extern homing for homemod_extern.so	
 
 # From motion to cia
 net x-enable    					joint.0.amp-enable-out 				lcec.0.delta_b3.enable
