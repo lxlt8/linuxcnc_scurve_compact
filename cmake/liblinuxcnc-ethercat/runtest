@@ -1,0 +1,49 @@
+#!/usr/bin/bash
+
+# Get current directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Build & install project.
+mkdir -p build
+cd build
+cmake ..
+make
+make install
+cd ..
+
+# Start linuxcnc environment.
+cd ../../scripts/ && . ./rip-environment
+cd ../bin
+
+halcmd stop
+halcmd loadrt threads name1=servo-thread fp1=0 period1=1000000
+
+halcmd loadusr -W lcec_conf "${SCRIPT_DIR}/ethercat-conf-DELTA-ASDA-B3.xml"
+halcmd loadrt lcec 
+
+halcmd addf lcec.read-all servo-thread
+halcmd addf lcec.write-all servo-thread
+
+# We miss 2 entry's for the drive.
+
+halcmd setp lcec.0.Delta_servo.var-opmode 8		# 0=None, 8=Position, 9=Velocity, 6=Home.
+halcmd setp lcec.0.Delta_servo.var-pos-scale 100000
+halcmd setp lcec.0.Delta_servo.var-vel-scale 1
+halcmd setp lcec.0.Delta_servo.var-max-torque 125
+halcmd setp lcec.0.Delta_servo.var-max-torque-home-stop 100 
+halcmd setp lcec.0.Delta_servo.var-torque-release-delay-ms 2000
+
+# Home program. Page 802.
+# 0		= Default
+# 33	= Home cw  to index pulse
+# 34    = Home ccw to index pulse
+# -3    = Home cw to hard stop, set P1.087->Torque homing Page 351 & P1.088->Torque homing - level reached timer.
+halcmd setp lcec.0.Delta_servo.var-home-program				33	
+
+halcmd setp lcec.0.Delta_servo.enable						1		# Enable drive.
+
+halcmd start
+# Open halshow to monitor pins.
+halshow
+# Clean environment.
+halrun -U

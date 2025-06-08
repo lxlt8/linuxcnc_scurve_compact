@@ -1,34 +1,27 @@
 # Halshow settings
 # This file is generated automatically.
-wm geometry . 918x823+764+58
+wm geometry . 918x823+859+65
 placeFrames 0.5101744186046512
 set ::ratio 0.5101744186046512
 set ::old_w_leftf 160
 set ::watchlist {
-    pin+cia402.0.home
-    pin+cia402.0.homing-method
-    pin+cia402.0.var-home-program
-    pin+joint.0.motor-pos-cmd
-    pin+joint.0.motor-pos-fb
-    pin+joint.0.motor-offset
-    pin+cia402.0.pos-cmd
-    pin+cia402.0.pos-fb
-    pin+joint.0.home-sw-in
-    pin+cia402.0.actual-torque
-    pin+cia402.0.var-max-torque-home-stop
-    pin+cia402.0.stat-torque-home-stop
-    pin+joint.0.index-enable
-    sig+x-index-enable
-    pin+joint.0.home-extern
-    pin+joint.0.in-position
-    pin+joint.0.coarse-pos-cmd
-    pin+joint.0.pos-cmd
-    pin+joint.0.pos-fb
-    pin+cia402.0.index-enable-clear
-    pin+joint.0.homed
-    pin+joint.0.homing
-    pin+cia402.0.home-torque-enable
-    pin+cia402.0.max-torque
+    pin+lcec.0.Delta_servo.stat-homed
+    pin+lcec.0.Delta_servo.stat-homing
+    pin+lcec.0.Delta_servo.var-home-program
+    pin+lcec.0.Delta_servo.var-max-torque
+    pin+lcec.0.Delta_servo.var-max-torque-home-stop
+    pin+lcec.0.Delta_servo.var-opmode
+    pin+lcec.0.Delta_servo.var-pos-scale
+    pin+lcec.0.Delta_servo.var-torque-release-delay-ms
+    pin+lcec.0.Delta_servo.var-vel-scale
+    pin+lcec.0.Delta_servo.vel-cmd
+    pin+lcec.0.Delta_servo.vel-fb
+    pin+lcec.0.Delta_servo.stat-torque-home-stop
+    pin+lcec.0.Delta_servo.pos-fb
+    pin+lcec.0.Delta_servo.actual-position
+    pin+lcec.0.Delta_servo.pos-cmd
+    pin+lcec.0.Delta_servo.position-demand-value
+    pin+lcec.0.Delta_servo.home
 }
 set ::workmode watchhal
 set ::watchInterval 100

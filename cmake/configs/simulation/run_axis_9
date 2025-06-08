@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Get current directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Path to config file relative to script location
+CONFIG="${SCRIPT_DIR}/axis_9/axis_scurve_9_mm.ini"
+cd ../../..
+cd scripts
+. ./rip-environment
+linuxcnc $CONFIG
+
+

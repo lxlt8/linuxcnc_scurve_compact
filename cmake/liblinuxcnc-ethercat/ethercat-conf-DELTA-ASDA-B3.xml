@@ -1,0 +1,9 @@
+<masters>
+<master idx="0" appTimePeriod="1000000" refClockSyncCycles="1">
+	<slave idx="0" type="DELTA-ASDA-B3" name="Delta_servo">
+		<dcConf assignActivate="300" sync0Cycle="*1" sync0Shift="0"/>
+		<sdoConfig idx="6093h" subIdx="1"><sdoDataRaw data="00 00 00 01"/></sdoConfig>
+		<sdoConfig idx="6093h" subIdx="2"><sdoDataRaw data="20 A1 07 00"/></sdoConfig> 
+     </slave>
+</master>
+</masters>

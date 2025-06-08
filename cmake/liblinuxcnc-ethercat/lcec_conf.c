@@ -284,6 +284,9 @@ static const LCEC_CONF_TYPELIST_T slaveTypes[] = {
   { "R88D-KN75F-ECT", lcecSlaveTypeOmrG5_KN75F, NULL },
   { "R88D-KN150F-ECT", lcecSlaveTypeOmrG5_KN150F, NULL },
 
+  // Delta Asda B3 series.
+  { "DELTA-ASDA-B3", lcecSlaveTypeDELTA_ASDA_B3, NULL },
+
   // modusoft PH3LM2RM converter
   { "Ph3LM2RM", lcecSlaveTypePh3LM2RM, NULL },
 

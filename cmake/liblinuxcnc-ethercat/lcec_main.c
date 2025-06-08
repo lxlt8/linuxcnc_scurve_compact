@@ -52,7 +52,7 @@
 #include "lcec_deasda.h"
 #include "lcec_omrg5.h"
 #include "lcec_ph3lm2rm.h"
-
+#include "lcec_delta_asda_b3.h"
 #include "rtapi_app.h"
 
 MODULE_LICENSE("GPL");
@@ -242,6 +242,9 @@ static const lcec_typelist_t types[] = {
   { lcecSlaveTypeOmrG5_KN50F,  LCEC_OMRG5_VID, LCEC_OMRG5_R88D_KN50F_ECT_PID,  LCEC_OMRG5_PDOS, lcec_omrg5_init},
   { lcecSlaveTypeOmrG5_KN75F,  LCEC_OMRG5_VID, LCEC_OMRG5_R88D_KN75F_ECT_PID,  LCEC_OMRG5_PDOS, lcec_omrg5_init},
   { lcecSlaveTypeOmrG5_KN150F, LCEC_OMRG5_VID, LCEC_OMRG5_R88D_KN150F_ECT_PID, LCEC_OMRG5_PDOS, lcec_omrg5_init},
+
+  // Delta asda b3 series
+  { lcecSlaveTypeDELTA_ASDA_B3, LCEC_DELTA_VID, LCEC_DELTA_ASDA_B3_PID, LCEC_DELTA_ASDA_B3_PDOS, lcec_delta_asda_b3_init},
 
   // modusoft PH3LM2RM converter
   { lcecSlaveTypePh3LM2RM, LCEC_PH3LM2RM_VID, LCEC_PH3LM2RM_PID, LCEC_PH3LM2RM_PDOS, lcec_ph3lm2rm_init},

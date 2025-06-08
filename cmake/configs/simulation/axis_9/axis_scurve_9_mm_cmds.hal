@@ -1,9 +1,9 @@
-# Thu May 29 12:27:02 CEST 2025
+# Sun Jun 08 11:09:12 CEST 2025
 #
 # This file:    ./axis_scurve_9_mm_cmds.hal
-# Created by:   /home/user/linuxcnc_distro_files/linuxcnc/lib/hallib/basic_sim.tcl
+# Created by:   /home/user/linuxcnc_distro_files/linuxcnc_scurve_compact/lib/hallib/basic_sim.tcl
 # With options: 
-# From inifile: /home/user/linuxcnc_distro_files/linuxcnc/scripts/../cmake/configs/axis_9/axis_scurve_9_mm.ini
+# From inifile: /home/user/linuxcnc_distro_files/linuxcnc_scurve_compact/cmake/configs/simulation/axis_9/axis_scurve_9_mm.ini
 # Halfiles:     LIB:basic_sim.tcl locking_indexer.hal
 #
 # This file contains the hal commands produced by basic_sim.tcl
@@ -910,6 +910,7 @@ setp joint.0.jog-scale              0
 setp joint.0.jog-vel-mode           FALSE
 setp joint.0.neg-lim-sw-in          FALSE
 setp joint.0.pos-lim-sw-in          FALSE
+setp joint.0.reset-motor-offset     FALSE
 setp joint.1.amp-fault-in           FALSE
 setp joint.1.jog-accel-fraction     1
 setp joint.1.jog-counts             0
@@ -918,6 +919,7 @@ setp joint.1.jog-scale              0
 setp joint.1.jog-vel-mode           FALSE
 setp joint.1.neg-lim-sw-in          FALSE
 setp joint.1.pos-lim-sw-in          FALSE
+setp joint.1.reset-motor-offset     FALSE
 setp joint.2.amp-fault-in           FALSE
 setp joint.2.jog-accel-fraction     1
 setp joint.2.jog-counts             0
@@ -926,6 +928,7 @@ setp joint.2.jog-scale              0
 setp joint.2.jog-vel-mode           FALSE
 setp joint.2.neg-lim-sw-in          FALSE
 setp joint.2.pos-lim-sw-in          FALSE
+setp joint.2.reset-motor-offset     FALSE
 setp joint.3.amp-fault-in           FALSE
 setp joint.3.index-enable           FALSE
 setp joint.3.jog-accel-fraction     1
@@ -935,6 +938,7 @@ setp joint.3.jog-scale              0
 setp joint.3.jog-vel-mode           FALSE
 setp joint.3.neg-lim-sw-in          FALSE
 setp joint.3.pos-lim-sw-in          FALSE
+setp joint.3.reset-motor-offset     FALSE
 setp joint.4.amp-fault-in           FALSE
 setp joint.4.index-enable           FALSE
 setp joint.4.is-unlocked            FALSE
@@ -945,6 +949,7 @@ setp joint.4.jog-scale              0
 setp joint.4.jog-vel-mode           FALSE
 setp joint.4.neg-lim-sw-in          FALSE
 setp joint.4.pos-lim-sw-in          FALSE
+setp joint.4.reset-motor-offset     FALSE
 setp joint.5.amp-fault-in           FALSE
 setp joint.5.index-enable           FALSE
 setp joint.5.jog-accel-fraction     1
@@ -954,6 +959,7 @@ setp joint.5.jog-scale              0
 setp joint.5.jog-vel-mode           FALSE
 setp joint.5.neg-lim-sw-in          FALSE
 setp joint.5.pos-lim-sw-in          FALSE
+setp joint.5.reset-motor-offset     FALSE
 setp joint.6.amp-fault-in           FALSE
 setp joint.6.index-enable           FALSE
 setp joint.6.jog-accel-fraction     1
@@ -963,6 +969,7 @@ setp joint.6.jog-scale              0
 setp joint.6.jog-vel-mode           FALSE
 setp joint.6.neg-lim-sw-in          FALSE
 setp joint.6.pos-lim-sw-in          FALSE
+setp joint.6.reset-motor-offset     FALSE
 setp joint.7.amp-fault-in           FALSE
 setp joint.7.index-enable           FALSE
 setp joint.7.jog-accel-fraction     1
@@ -972,6 +979,7 @@ setp joint.7.jog-scale              0
 setp joint.7.jog-vel-mode           FALSE
 setp joint.7.neg-lim-sw-in          FALSE
 setp joint.7.pos-lim-sw-in          FALSE
+setp joint.7.reset-motor-offset     FALSE
 setp joint.8.amp-fault-in           FALSE
 setp joint.8.index-enable           FALSE
 setp joint.8.jog-accel-fraction     1
@@ -981,6 +989,7 @@ setp joint.8.jog-scale              0
 setp joint.8.jog-vel-mode           FALSE
 setp joint.8.neg-lim-sw-in          FALSE
 setp joint.8.pos-lim-sw-in          FALSE
+setp joint.8.reset-motor-offset     FALSE
 setp limit_speed.load               FALSE
 setp limit_speed.max                1e+20
 setp limit_speed.maxv               5000

@@ -74,9 +74,9 @@ cd ../..
 
 # Homing component "homeextern.so"
 echo "+---------------------------------------------------------------+"
-echo "|                     homecia402.so                          |"
+echo "|                     libhome-extern.so                          |"
 echo "+---------------------------------------------------------------+"
-cd libhomecia402
+cd libhome-extern
 mkdir -p build
 cd build
 eval $BUILDER
@@ -125,18 +125,6 @@ echo "+---------------------------------------------------------------+"
 echo "|                     custom lcec.so lcec_conf                   |"
 echo "+---------------------------------------------------------------+"
 cd liblinuxcnc-ethercat
-mkdir -p build
-cd build
-eval $BUILDER
-make -j`nproc`
-sudo make install
-cd ../..
-
-# Cia402 realtime component "cia402.so"
-echo "+---------------------------------------------------------------+"
-echo "|                     custom cia402.so                    |"
-echo "+---------------------------------------------------------------+"
-cd libcia402
 mkdir -p build
 cd build
 eval $BUILDER

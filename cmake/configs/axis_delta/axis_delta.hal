@@ -11,21 +11,18 @@
 loadrt [KINS]KINEMATICS
 loadrt [EMCMOT]EMCMOT servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[KINS]JOINTS 
 
-loadusr -W lcec_conf ethercat-conf.xml
+loadusr -W lcec_conf ethercat-conf-delta.xml
 loadrt lcec
-loadrt cia402 count=1
 
 ###########################################################
 # Functions servo-thread
 ###########################################################
 
 addf lcec.read-all servo-thread
-addf cia402.read-all servo-thread
 
 addf motion-command-handler servo-thread
 addf motion-controller servo-thread
 
-addf cia402.write-all servo-thread
 addf lcec.write-all servo-thread
 
 #########################################
@@ -35,35 +32,20 @@ net emc-enable => iocontrol.0.emc-enable-in
 sets emc-enable 1
 
 #x-axis
-setp cia402.0.var-opmode            		8      		# 0=None, 8=Position, 9=Velocity, 6=Home.
-setp cia402.0.var-pos-scale 				100000
-setp cia402.0.var-max-torque        		125			# Used motor torque at runtime.
-setp cia402.0.var-max-torque-home-stop		100			# Triggers pin when torque is at value.
-setp cia402.0.var-torque-release-delay-ms	2000		# Time in ms the home torque trigger stays up.
-setp cia402.0.var-home-program      		33    		# 33=Home to z pulse. ? Use 34 for inverted direction.
-setp joint.0.home-extern                	1           # Use extern homing for homemod.so
-
-#from servo(ethercat) to cia402
-net x-statusword 					lcec.0.0.cia-statusword 			cia402.0.statusword
-net x-opmode-display 				lcec.0.0.opmode-display 			cia402.0.opmode-display
-net x-drv-act-pos 					lcec.0.0.actual-position 			cia402.0.actual-position
-net x-drv-act-velo 					lcec.0.0.actual-velocity 			cia402.0.actual-velocity
-net x-actual-torque   				lcec.0.0.actual-torque      		cia402.0.actual-torque
-net x-actual-following-error		lcec.0.0.actual-following-error 	cia402.0.actual-following-error
-
-#from cia402 to servo(ethercat) 
-net x-controlword 					cia402.0.controlword 				lcec.0.0.cia-controlword
-net x-modes-of-operation 			cia402.0.opmode 			    	lcec.0.0.opmode
-net x-drv-target-pos 				cia402.0.target-position 			lcec.0.0.target-position
-net x-drv-target-velo 				cia402.0.target-velocity 			lcec.0.0.target-velocity
-net x-drv-max-torque 				cia402.0.max-torque 				lcec.0.0.max-torque 			
-net x-homing-method        			cia402.0.homing-method          	lcec.0.0.homing-method			
+setp lcec.0.delta_b3.var-opmode            			8      		# 0=None, 8=Position, 9=Velocity, 6=Home.
+setp lcec.0.delta_b3.var-pos-scale 					100000
+setp lcec.0.delta_b3.var-vel-scale 					1
+setp lcec.0.delta_b3.var-max-torque        			125			# Used motor torque at runtime.
+setp lcec.0.delta_b3.var-max-torque-home-stop		100			# Triggers pin when torque is at value.
+setp lcec.0.delta_b3.var-torque-release-delay-ms		2000		# Time in ms the home torque trigger stays up.
+setp lcec.0.delta_b3.var-home-program      			33    		# 33=Home to z pulse. ? Use 34 for inverted direction.
+setp joint.0.home-extern                				1           # Use extern homing for homemod.so	
 
 # From motion to cia
-net x-enable    					joint.0.amp-enable-out 				cia402.0.enable
-net x-amp-fault 			 		joint.0.amp-fault-in   				cia402.0.stat-fault
-net x-pos-cmd  	 					joint.0.motor-pos-cmd  				cia402.0.pos-cmd
-net x-pos-fb    					joint.0.motor-pos-fb   				cia402.0.pos-fb
-net x-home-switch					joint.0.home-sw-in					cia402.0.stat-torque-home-stop					 
-net x-index-enable                  joint.0.index-enable			 	cia402.0.index-enable            
-net x-is-homing						joint.0.homing						cia402.0.home-torque-enable
+net x-enable    					joint.0.amp-enable-out 				lcec.0.delta_b3.enable
+net x-amp-fault 			 		joint.0.amp-fault-in   				lcec.0.delta_b3.stat-fault
+net x-pos-cmd  	 					joint.0.motor-pos-cmd  				lcec.0.delta_b3.pos-cmd
+net x-pos-fb    					joint.0.motor-pos-fb   				lcec.0.delta_b3.pos-fb
+net x-home-switch					joint.0.home-sw-in					lcec.0.delta_b3.stat-torque-home-stop					 
+net x-index-enable                  joint.0.index-enable			 	lcec.0.delta_b3.index-enable            
+net x-is-homing						joint.0.homing						lcec.0.delta_b3.home-torque-enable

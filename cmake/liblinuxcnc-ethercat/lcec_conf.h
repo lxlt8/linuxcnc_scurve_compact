@@ -185,6 +185,7 @@ typedef enum {
   lcecSlaveTypeOmrG5_KN50F,
   lcecSlaveTypeOmrG5_KN75F,
   lcecSlaveTypeOmrG5_KN150F,
+  lcecSlaveTypeDELTA_ASDA_B3,
   lcecSlaveTypePh3LM2RM
 } LCEC_SLAVE_TYPE_T;
 

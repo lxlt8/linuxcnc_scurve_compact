@@ -68,6 +68,7 @@ ADD_LIBRARY(${PROJECT} SHARED
     ${SRC_DIR}/lcec_deasda.c
     ${SRC_DIR}/lcec_omrg5.c
     ${SRC_DIR}/lcec_ph3lm2rm.c
+    ${SRC_DIR}/lcec_delta_asda_b3.c
     )
 # Set include paths for libraries to link.
 add_library(linuxcnchal SHARED IMPORTED) # or STATIC instead of SHARED
@@ -77,7 +78,7 @@ set_target_properties(linuxcnchal PROPERTIES
     )
 
 # Link to libraries.
-target_link_libraries(${PROJECT_NAME} PRIVATE PRIVATE pthread rt linuxcnchal ethercat)
+target_link_libraries(${PROJECT_NAME} PRIVATE PRIVATE pthread rt linuxcnchal ethercat -lm)
 
 # Set custom output name :
 # set_property(TARGET  ${PROJECT} PROPERTY OUTPUT_NAME thename)
