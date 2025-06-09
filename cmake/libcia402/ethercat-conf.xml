@@ -1,0 +1,49 @@
+<masters>
+  <master idx="0" appTimePeriod="1000000" refClockSyncCycles="-1">
+    <slave idx="0" type="generic" vid="000001dd" pid="00006080" configPdos="true">
+      <dcConf assignActivate="300" sync0Cycle="*1" sync0Shift="0"/>
+      
+      <!-- Gear Ratio Configuration -->
+      <sdoConfig idx="6093h" subIdx="1"><sdoDataRaw data="00 00 00 01"/></sdoConfig> <!-- Position encoder resolution numerator 1 -->
+      <sdoConfig idx="6093h" subIdx="2"><sdoDataRaw data="20 A1 07 00"/></sdoConfig> <!-- Position encoder resolution denominator 500,000 -->
+      
+      <!-- Homing Parameters, i think these wont work. -->
+      <!--  <sdoConfig idx="6099h" subIdx="1"><sdoDataRaw data="00 00 03 E8"/></sdoConfig> --> <!-- Homing speed during switch search 1000 -->
+      <!--  <sdoConfig idx="6099h" subIdx="2"><sdoDataRaw data="00 00 13 88"/></sdoConfig> --> <!-- Homing speed during zero search 5000 -->
+      <!--  <sdoConfig idx="609Ah" subIdx="0"><sdoDataRaw data="00 00 00 64"/></sdoConfig> --> <!-- Homing acceleration 100 -->
+      <!--  <sdoConfig idx="607Ch" subIdx="0"><sdoDataRaw data="00 00 00 01"/></sdoConfig> --> <!-- Home offset -->
+      
+      <!-- Digital I/O Configuration -->
+      <sdoConfig idx="60FEh" subIdx="2"><sdoDataRaw data="00 0F 00 00"/></sdoConfig>
+      
+      
+      <!-- Output PDOs (Control and Motion Commands) -->
+      <syncManager idx="2" dir="out">
+        <pdo idx="1600">
+          <pdoEntry idx="6040" subIdx="0" bitLen="16" halPin="cia-controlword" halType="u32"/>
+          <pdoEntry idx="6060" subIdx="0" bitLen="8" halPin="opmode" halType="s32"/>
+          <pdoEntry idx="6065" subIdx="0" bitLen="32" halPin="following-error-window" halType="u32"/>
+          <pdoEntry idx="607A" subIdx="0" bitLen="32" halPin="target-position" halType="s32"/>
+          <pdoEntry idx="60FF" subIdx="0" bitLen="32" halPin="target-velocity" halType="s32"/>
+          <pdoEntry idx="6072" subIdx="0" bitLen="16" halPin="max-torque" halType="u32"/>
+          <pdoEntry idx="6098" subIdx="0" bitLen="8" halPin="homing-method" halType="s32"/>      
+          <pdoEntry idx="60FE" subIdx="1" bitLen="32" halPin="digital-outputs" halType="u32"/>
+        </pdo>
+      </syncManager>
+
+      <!-- Input PDOs Group 1 (Standard Feedback) -->
+      <syncManager idx="3" dir="in">
+        <pdo idx="1a00">
+          <pdoEntry idx="6041" subIdx="0" bitLen="16" halPin="cia-statusword" halType="u32"/>
+          <pdoEntry idx="6061" subIdx="0" bitLen="8" halPin="opmode-display" halType="s32"/>
+          <pdoEntry idx="6064" subIdx="0" bitLen="32" halPin="actual-position" halType="s32"/>
+          <pdoEntry idx="606C" subIdx="0" bitLen="32" halPin="actual-velocity" halType="s32"/>
+          <pdoEntry idx="6077" subIdx="0" bitLen="16" halPin="actual-torque" halType="s32"/>
+          <pdoEntry idx="60F4" subIdx="0" bitLen="32" halPin="actual-following-error" halType="s32"/>
+          <pdoEntry idx="60FC" subIdx="0" bitLen="32" halPin="position-demand-value" halType="s32"/>
+          <pdoEntry idx="2001" subIdx="0" bitLen="16" halPin="servo-alarm" halType="u32"/>
+        </pdo>
+      </syncManager>
+    </slave>
+  </master>
+</masters>

@@ -1,7 +1,7 @@
 # Homemod_extern
 
 ## Hal component for linuxcnc homing.
-Homecia402.so is a linuxcnc hal component like homemod.so.
+Homemod_extern.so is a linuxcnc hal component like homemod.so.
 This component has a few edits to make it able to be used with servo drives using internal homing,
 like home on index z pulse.
 

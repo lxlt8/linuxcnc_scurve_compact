@@ -146,6 +146,22 @@ typedef struct {
     hal_bit_t *stat_drv_fault;
     hal_bit_t *stat_torque_home_stop;
 
+    // Digital inputs, U32
+    hal_u32_t *digital_inputs;
+    // Digital inputs, Bit.
+    hal_bit_t *digital_input_negative_limit_signal;
+    hal_bit_t *digital_input_positive_limit_signal;
+    hal_bit_t *digital_input_home_signal;
+
+    // Digital outputs, U32
+    hal_u32_t *digital_outputs;
+    hal_u32_t *digital_outputs_mask;
+    // Digital outputs, Bit.
+    hal_bit_t *digital_output_0;
+    hal_bit_t *digital_output_1;
+    hal_bit_t *digital_output_2;
+    hal_bit_t *digital_output_3;
+
     // Status pins, float.
     hal_float_t *stat_runtime;
 
@@ -154,6 +170,7 @@ typedef struct {
     unsigned int actual_position_pdo_os;
     unsigned int actual_velocity_pdo_os;
     unsigned int actual_torque_pdo_os;
+    unsigned int touch_probe_status_pdo_os;
     unsigned int actual_following_error_pdo_os;
     unsigned int position_demand_value_pdo_os;
     unsigned int servo_alarm_pdo_os;
@@ -164,6 +181,12 @@ typedef struct {
     unsigned int target_velocity_pdo_os;
     unsigned int max_torque_pdo_os;
     unsigned int homing_method_pdo_os;
+    unsigned int homing_speeds_pdo_os;
+    unsigned int homing_speed_switch_search_pdo_os;
+    unsigned int homing_speed_zero_search_pdo_os;
+    unsigned int digital_inputs_pdo_os;
+    unsigned int digital_outputs_pdo_os;
+    unsigned int digital_outputs_mask_pdo_os;
 
     enum enum_drive_state drive_state;
     enum enum_drive_fault enum_fault;
@@ -182,7 +205,7 @@ typedef struct {
 
 } lcec_delta_asda_b3_data_t;
 
-static void drive_home_on_index(lcec_delta_asda_b3_data_t *joint);
+void lcec_drive_home_on_index(lcec_delta_asda_b3_data_t *joint);
 
 static lcec_pindesc_t slave_pins[] = {
     { HAL_BIT, HAL_IN, offsetof(lcec_delta_asda_b3_data_t, enable), "%s.%s.%s.enable" },
@@ -247,6 +270,16 @@ static lcec_pindesc_t slave_pins[] = {
     { HAL_BIT, HAL_OUT, offsetof(lcec_delta_asda_b3_data_t, stat_drv_fault), "%s.%s.%s.stat-drv-fault" },
     { HAL_BIT, HAL_OUT, offsetof(lcec_delta_asda_b3_data_t, stat_torque_home_stop), "%s.%s.%s.stat-torque-home-stop" },
     { HAL_FLOAT, HAL_OUT, offsetof(lcec_delta_asda_b3_data_t, stat_runtime), "%s.%s.%s.stat-runtime" },
+    { HAL_U32, HAL_OUT, offsetof(lcec_delta_asda_b3_data_t, digital_outputs), "%s.%s.%s.digital-outputs" },
+    { HAL_U32, HAL_OUT, offsetof(lcec_delta_asda_b3_data_t, digital_outputs_mask), "%s.%s.%s.digital-outputs-mask" },
+    { HAL_BIT, HAL_IN, offsetof(lcec_delta_asda_b3_data_t, digital_output_0), "%s.%s.%s.digital-output-0" },
+    { HAL_BIT, HAL_IN, offsetof(lcec_delta_asda_b3_data_t, digital_output_1), "%s.%s.%s.digital-output-1" },
+    { HAL_BIT, HAL_IN, offsetof(lcec_delta_asda_b3_data_t, digital_output_2), "%s.%s.%s.digital-output-2" },
+    { HAL_BIT, HAL_IN, offsetof(lcec_delta_asda_b3_data_t, digital_output_3), "%s.%s.%s.digital-output-3" },
+    { HAL_U32, HAL_IN, offsetof(lcec_delta_asda_b3_data_t, digital_inputs), "%s.%s.%s.digital-inputs" },
+    { HAL_BIT, HAL_OUT, offsetof(lcec_delta_asda_b3_data_t, digital_input_negative_limit_signal), "%s.%s.%s.digital-in-neg-lim-sign" },
+    { HAL_BIT, HAL_OUT, offsetof(lcec_delta_asda_b3_data_t, digital_input_positive_limit_signal), "%s.%s.%s.digital-in-pos-lim-sign" },
+    { HAL_BIT, HAL_OUT, offsetof(lcec_delta_asda_b3_data_t, digital_input_home_signal), "%s.%s.%s.digital-input-home-signal" },
     { HAL_TYPE_UNSPECIFIED, HAL_DIR_UNSPECIFIED, -1, NULL }
 };
 
@@ -255,25 +288,34 @@ static const lcec_pindesc_t slave_params[] = {
     { HAL_TYPE_UNSPECIFIED, HAL_DIR_UNSPECIFIED, -1, NULL }
 };
 
+// Dont forget to count up the items.
 static ec_pdo_entry_info_t lcec_in[] = {
-    {0x6041, 0x00, 16}, // Status Word              (U32)
-    {0x6061, 0x00, 8},  // Opmode-display           (S32)
-    {0x6064, 0x00, 32}, // Actual-position          (S32)
-    {0x606C, 0x00, 32}, // Actual-velocity          (S32)
-    {0x6077, 0x00, 16}, // Actual-torque            (S32)
-    {0x60F4, 0x00, 32}, // Actual-following-error   (S32)
-    {0x60FC, 0x00, 32}, // Position-demand-value    (S32)
-    {0x2001, 0x00, 16}  // Servo-alarm              (U32)
+    {0x6041, 0x00, 16}, // Status Word                  (U32)
+    {0x6061, 0x00, 8},  // Opmode-display               (S32)
+    {0x6064, 0x00, 32}, // Actual-position              (S32)
+    {0x606C, 0x00, 32}, // Actual-velocity              (S32)
+    {0x6077, 0x00, 16}, // Actual-torque                (S32)
+    // {0x60B9, 0x00, 16}, // Touch-probe-status        (S16)
+    {0x60F4, 0x00, 32}, // Actual-following-error       (S32)
+    {0x60FC, 0x00, 32}, // Position-demand-value        (S32)
+    {0x2001, 0x00, 16} // Servo-alarm                   (U32)
+    // {0x60FD, 0x00, 32},  // Digital Inputs           (U32)
 };
 
+// Dont forget to count up the items.
 static ec_pdo_entry_info_t lcec_out[] = {
-    {0x6040, 0x00,  16}, // Control Word            (U32)
-    {0x6060, 0x00,  8},  // Opmode                  (S32)
-    {0x6065, 0x00,  32}, // Following-error-window  (U32)
-    {0x607A, 0x00,  32}, // Target-position         (S32)
-    {0x60FF, 0x00,  32}, // Target-velocity         (S32)
-    {0x6072, 0x00,  16}, // Max-torque              (U32)
-    {0x6098, 0x00,  8}   // Homing-method           (S32)
+    {0x6040, 0x00,  16}, // Control Word                (U32)
+    {0x6060, 0x00,  8},  // Opmode                      (S32)
+    {0x6065, 0x00,  32}, // Following-error-window      (U32)
+    {0x607A, 0x00,  32}, // Target-position             (S32)
+    {0x60FF, 0x00,  32}, // Target-velocity             (S32)
+    {0x6072, 0x00,  16}, // Max-torque                  (U32)
+    {0x6098, 0x00,  8}  // Homing-method               (S32)
+    //{0x6099, 0x00,  8},  // Homing-speeds               (U32)
+    //{0x6099, 0x01,  32}, // Homing-speed-switch-search  (U32)
+    //{0x6099, 0x02,  32}  // Homing-speed-zero-search    (U32)
+    //{0x60FE, 0x01,  32}, // Digital-outputs         (U32)
+    //{0x60FE, 0x02,  32}  // Digital-outputs-mask    (U32)
 };
 
 static ec_pdo_info_t lcec_delta_asda_b3_pdos_out[] = {
@@ -309,27 +351,32 @@ int lcec_delta_asda_b3_init(int comp_id, struct lcec_slave *slave, ec_pdo_entry_
     memset(hal_data, 0, sizeof(lcec_delta_asda_b3_data_t));
     slave->hal_data = hal_data;
 
-//    // Set an sdo.
-//    if (ecrt_slave_config_sdo32(slave->config, 0x6093, 0x01, 16777216) != 0) {
-//      rtapi_print_msg (RTAPI_MSG_ERR, LCEC_MSG_PFX "fail to configure slave %s.%s sdo 6093h subindex 1. \n", master->name, slave->name);
-//    }
-//    if (ecrt_slave_config_sdo32(slave->config, 0x6093, 0x02, 500000) != 0) {
-//      rtapi_print_msg (RTAPI_MSG_ERR, LCEC_MSG_PFX "fail to configure slave %s.%s sdo 6093h subindex 2. \n", master->name, slave->name);
-//    }
+    //    // Set an sdo.
+    //    if (ecrt_slave_config_sdo32(slave->config, 0x6093, 0x01, 16777216) != 0) {
+    //      rtapi_print_msg (RTAPI_MSG_ERR, LCEC_MSG_PFX "fail to configure slave %s.%s sdo 6093h subindex 1. \n", master->name, slave->name);
+    //    }
+    //    if (ecrt_slave_config_sdo32(slave->config, 0x6093, 0x02, 500000) != 0) {
+    //      rtapi_print_msg (RTAPI_MSG_ERR, LCEC_MSG_PFX "fail to configure slave %s.%s sdo 6093h subindex 2. \n", master->name, slave->name);
+    //    }
 
     // Initialize sync info
     slave->sync_info = lcec_delta_asda_b3_syncs;
 
     // Initialize PDO entries, this is like the .xml entry list.
+    // Lcec in.
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6041, 0x00, &hal_data->status_word_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6061, 0x00, &hal_data->opmode_display_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6064, 0x00, &hal_data->actual_position_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x606C, 0x00, &hal_data->actual_velocity_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6077, 0x00, &hal_data->actual_torque_pdo_os, NULL);
+
+    // LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x60B9, 0x00, &hal_data->touch_probe_status_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x60F4, 0x00, &hal_data->actual_following_error_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x60FC, 0x00, &hal_data->position_demand_value_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x2001, 0x00, &hal_data->servo_alarm_pdo_os, NULL);
+    // LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x60FD, 0x00, &hal_data->digital_inputs_pdo_os, NULL);
 
+    // Lcec out.
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6040, 0x00, &hal_data->control_word_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6060, 0x00, &hal_data->opmode_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6065, 0x00, &hal_data->following_error_window_pdo_os, NULL);
@@ -337,6 +384,11 @@ int lcec_delta_asda_b3_init(int comp_id, struct lcec_slave *slave, ec_pdo_entry_
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x60FF, 0x00, &hal_data->target_velocity_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6072, 0x00, &hal_data->max_torque_pdo_os, NULL);
     LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6098, 0x00, &hal_data->homing_method_pdo_os, NULL);
+    //LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6099, 0x00, &hal_data->homing_speeds_pdo_os, NULL);
+    //LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6099, 0x01, &hal_data->homing_speed_switch_search_pdo_os, NULL);
+    //LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x6099, 0x02, &hal_data->homing_speed_zero_search_pdo_os, NULL);
+    //LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x60FE, 0x01, &hal_data->digital_outputs_pdo_os, NULL);
+    //LCEC_PDO_INIT(r, slave->index, slave->vid, slave->pid, 0x60FE, 0x02, &hal_data->digital_outputs_mask_pdo_os, NULL);
 
     // Export pins
     if ((err = lcec_pin_newf_list(hal_data, slave_pins, LCEC_MODULE_NAME, master->name, slave->name)) != 0) {
@@ -356,7 +408,7 @@ int lcec_delta_asda_b3_init(int comp_id, struct lcec_slave *slave, ec_pdo_entry_
 }
 
 // Function to check input values and prevent dividing by zero.
-static void drive_check_scales(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_check_scales(lcec_delta_asda_b3_data_t *joint){
     if( (*joint->var_pos_scale)<1e-20 && (*joint->var_pos_scale)>1e-20 ){
         *joint->var_pos_scale = 1;
         printf("drive pos scale set to 1. \n");
@@ -367,10 +419,10 @@ static void drive_check_scales(lcec_delta_asda_b3_data_t *joint){
     }
 }
 
-static void read_drive_status(lcec_delta_asda_b3_data_t *joint) {
+void lcec_read_drive_status(lcec_delta_asda_b3_data_t *joint) {
 
     // Check input values for pos & vel scale.
-    drive_check_scales(joint);
+    lcec_drive_check_scales(joint);
     // printf("pos scale: %f \n",(float)(*joint->var_pos_scale));
 
     // Update run timer.
@@ -461,20 +513,28 @@ static void read_drive_status(lcec_delta_asda_b3_data_t *joint) {
         *joint->index_enable = 0;
         // printf("index enable cleared. \n");
     }
+
+    // Read digital inputs. Bit 3-15 are reserved.
+    int di0 = (*joint->digital_inputs >> 0) & 1;
+    int di1 = (*joint->digital_inputs >> 1) & 1;
+    int di2 = (*joint->digital_inputs >> 2) & 1;
+    *joint->digital_input_negative_limit_signal = di0;
+    *joint->digital_input_positive_limit_signal = di1;
+    *joint->digital_input_home_signal = di2;
 }
 
 // Write position command
-static void drive_write_position_(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_write_position(lcec_delta_asda_b3_data_t *joint){
     *joint->target_position = (hal_s32_t)( (*joint->pos_cmd) * (*joint->var_pos_scale) );
 }
 
 // Write velocity command
-static void drive_write_velocity(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_write_velocity(lcec_delta_asda_b3_data_t *joint){
     *joint->target_velocity = (hal_s32_t)( (*joint->vel_cmd) * (*joint->var_vel_scale) );
 }
 
 // Write torque command
-static void drive_write_torque(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_write_torque(lcec_delta_asda_b3_data_t *joint){
 
     // Lower torque when searching for index pulse.
     // Lower torque when linuxcnc is doing a home sequence.
@@ -487,21 +547,21 @@ static void drive_write_torque(lcec_delta_asda_b3_data_t *joint){
 }
 
 // Function to write shutdown to the drive.
-static void drive_shutdown(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_shutdown(lcec_delta_asda_b3_data_t *joint){
     uint8_t mask;
     mask = (0 << 0) | (1 << 1) | (1 << 2) | (0 << 3) | (0 << 7);
     *joint->controlword = mask;
 }
 
 // Function to switch on drive.
-static void drive_switch_on(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_switch_on(lcec_delta_asda_b3_data_t *joint){
     uint8_t mask;
     mask = (1 << 0) | (1 << 1) | (1 << 2) | (0 << 3)  | (0 << 7);
     *joint->controlword = mask;
 }
 
 // Function to enable operation for drive.
-static void drive_enable_operation(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_enable_operation(lcec_delta_asda_b3_data_t *joint){
     uint8_t mask;
     mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (0 << 7);
     *joint->controlword = mask;
@@ -509,7 +569,7 @@ static void drive_enable_operation(lcec_delta_asda_b3_data_t *joint){
 }
 
 // Function to reset fault for driver.
-static void drive_reset_fault(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_reset_fault(lcec_delta_asda_b3_data_t *joint){
     uint8_t mask;
     mask = (1 << 7);
     *joint->controlword = mask;
@@ -517,7 +577,7 @@ static void drive_reset_fault(lcec_delta_asda_b3_data_t *joint){
 
 // Function to perform home sequence for drive.
 // Home program: 0 for default, 33 for z pulse index.
-static void drive_do_home(lcec_delta_asda_b3_data_t *joint, int home_program){
+void lcec_drive_do_home(lcec_delta_asda_b3_data_t *joint, int home_program){
     uint8_t mask;
     mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (0 << 7);
     *joint->controlword = mask;
@@ -526,15 +586,44 @@ static void drive_do_home(lcec_delta_asda_b3_data_t *joint, int home_program){
 }
 
 // Function to set homed for drive nr i.
-static void drive_set_homed(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_set_homed(lcec_delta_asda_b3_data_t *joint){
     uint8_t mask;
     mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (0 << 4) | (0 << 7);
     *joint->controlword = mask;
     *joint->opmode = *joint->var_opmode;
 }
 
+// Enable the usage off the 4 digital outputs. The mask enables or disables the outputs to be used.
+// The mask is bit nr. 16, 17, 18, 19.
+void lcec_drive_enable_digital_output_mask(lcec_delta_asda_b3_data_t *joint){
+    uint32_t mask;
+    mask = (1 << 16) | (1 << 17) | (1 << 18) | (1 << 19);
+    *joint->digital_outputs_mask = mask;
+}
+
+// Disable the usage off the 4 digital outputs. The mask enables or disables the outputs to be used.
+// The mask is bit nr. 16, 17, 18, 19.
+void lcec_drive_disable_digital_output_mask(lcec_delta_asda_b3_data_t *joint){
+    uint32_t mask;
+    mask = (0 << 16) | (0 << 17) | (0 << 18) | (0 << 19);
+    *joint->digital_outputs_mask = mask;
+}
+
+// Set the digital output U32 to the drive, given the user input pins status.
+void lcec_drive_write_digital_output(lcec_delta_asda_b3_data_t *joint){
+
+    int do0 = *joint->digital_output_0;
+    int do1 = *joint->digital_output_1;
+    int do2 = *joint->digital_output_2;
+    int do3 = *joint->digital_output_3;
+
+    uint32_t mask;
+    mask = (do0 << 16) | (do1 << 17) | (do2 << 18) | (do3 << 19);
+    *joint->digital_outputs = mask;
+}
+
 // Function to home drive on index z pulse.
-static void drive_home(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_home(lcec_delta_asda_b3_data_t *joint){
 
     double home_delay   = 0.1;      // Delay in seconds.
 
@@ -542,7 +631,7 @@ static void drive_home(lcec_delta_asda_b3_data_t *joint){
     case HOME_NONE:
         break;
     case HOME_INIT:
-        drive_do_home(joint,*joint->var_home_program);
+        lcec_drive_do_home(joint,*joint->var_home_program);
         joint->home_struct.hs = HOME_DELAY;
         joint->home_struct.delay = 0;
         joint->home_struct.home_busy_message = 0;
@@ -569,7 +658,7 @@ static void drive_home(lcec_delta_asda_b3_data_t *joint){
         joint->home_struct.hs = HOME_NONE;
         joint->runmode = RUN_NONE;
         // Set opmode back to position.
-        drive_set_homed(joint);
+        lcec_drive_set_homed(joint);
 
         *joint->stat_homing=0;
         *joint->stat_homed=1;
@@ -584,7 +673,7 @@ static void drive_home(lcec_delta_asda_b3_data_t *joint){
 }
 
 // Function when drive is in state : Operation enabled.
-void drive_run(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_run(lcec_delta_asda_b3_data_t *joint){
 
     // Check for inputs.
     if(*joint->home){
@@ -605,7 +694,7 @@ void drive_run(lcec_delta_asda_b3_data_t *joint){
 
         break;
     case RUN_HOME:
-        drive_home(joint);
+        lcec_drive_home(joint);
         break;
 
     default:
@@ -614,19 +703,19 @@ void drive_run(lcec_delta_asda_b3_data_t *joint){
 }
 
 // Servo drive cia402 state machine workflow.
-void drive_state_machine_(lcec_delta_asda_b3_data_t *joint){
+void lcec_drive_state_machine(lcec_delta_asda_b3_data_t *joint){
 
     switch (joint->enum_fault) {
     case FAULT_OK:
         // Go on.
         break;
     case FAULT_SHUTDOWN_DRIVE:
-        drive_shutdown(joint);
+        lcec_drive_shutdown(joint);
         joint->enum_fault = FAULT_OK;
         return;
     case FAULT_ACTIVE:
         // Reset fault.
-        drive_reset_fault(joint);
+        lcec_drive_reset_fault(joint);
         joint->enum_fault = FAULT_SHUTDOWN_DRIVE;
         return;
     default:
@@ -637,19 +726,19 @@ void drive_state_machine_(lcec_delta_asda_b3_data_t *joint){
     case NOT_READY_TO_SWITCH_ON:
     case SWITCH_ON_DISABLED:
         // Shutdown.
-        drive_shutdown(joint);
+        lcec_drive_shutdown(joint);
         break;
     case READY_TO_SWITCH_ON:
         // Switch on.
-        drive_switch_on(joint);
+        lcec_drive_switch_on(joint);
         break;
     case SWITCH_ON:
         // Enable operation.
-        drive_enable_operation(joint);
+        lcec_drive_enable_operation(joint);
         break;
     case OPERATION_ENABLED:
         // Drive is running.
-        drive_run(joint);
+        lcec_drive_run(joint);
         break;
     case QUICK_STOP_ACTIVE:
         // Hmm. What to do?
@@ -665,12 +754,13 @@ void drive_state_machine_(lcec_delta_asda_b3_data_t *joint){
     }
 }
 
+// Periodic read funtion. Connected to servo thread.
 void lcec_delta_asda_b3_read(struct lcec_slave *slave, long period) {
     lcec_master_t *master = slave->master;
     lcec_delta_asda_b3_data_t *hal_data = (lcec_delta_asda_b3_data_t *) slave->hal_data;
     uint8_t *pd = master->process_data;
 
-    // Read cia402 values from ethercat bus.
+    // Lcec in.
     *(hal_data->statusword) = EC_READ_U16(&pd[hal_data->status_word_pdo_os]);
     *(hal_data->opmode_display) = EC_READ_S8(&pd[hal_data->opmode_display_pdo_os]);
     *(hal_data->actual_position) = EC_READ_S32(&pd[hal_data->actual_position_pdo_os]);
@@ -679,20 +769,24 @@ void lcec_delta_asda_b3_read(struct lcec_slave *slave, long period) {
     *(hal_data->actual_following_error) = EC_READ_S32(&pd[hal_data->actual_following_error_pdo_os]);
     *(hal_data->position_demand_value) = EC_READ_S32(&pd[hal_data->position_demand_value_pdo_os]);
     *(hal_data->servo_alarm) = EC_READ_U16(&pd[hal_data->servo_alarm_pdo_os]);
+    // *(hal_data->digital_inputs) = EC_READ_U32(&pd[hal_data->digital_inputs_pdo_os]);
 
-    read_drive_status(hal_data);
+    lcec_read_drive_status(hal_data);
 }
 
+// Periodic write funtion. Connected to servo thread.
 void lcec_delta_asda_b3_write(struct lcec_slave *slave, long period) {
     lcec_master_t *master = slave->master;
     lcec_delta_asda_b3_data_t *hal_data = (lcec_delta_asda_b3_data_t *) slave->hal_data;
     uint8_t *pd = master->process_data;
 
     if(*hal_data->enable){
-        drive_state_machine_(hal_data);
-        drive_write_position_(hal_data);
-        drive_write_velocity(hal_data);
-        drive_write_torque(hal_data);
+        lcec_drive_state_machine(hal_data);
+        lcec_drive_write_position(hal_data);
+        lcec_drive_write_velocity(hal_data);
+        lcec_drive_write_torque(hal_data);
+        // drive_enable_digital_output_mask(hal_data);
+        // drive_write_digital_output(hal_data);
 
         // Check for home-index pin.
         if(*hal_data->index_enable && !hal_data->index_enable_trigger){
@@ -703,10 +797,12 @@ void lcec_delta_asda_b3_write(struct lcec_slave *slave, long period) {
         }
 
     } else {
-        drive_shutdown(hal_data);
+        lcec_drive_disable_digital_output_mask(hal_data);
+        lcec_drive_shutdown(hal_data);
         hal_data->index_enable_trigger = 0;
     }
 
+    // Lcec out.
     EC_WRITE_U16(&pd[hal_data->control_word_pdo_os], *hal_data->controlword);
     EC_WRITE_S8(&pd[hal_data->opmode_pdo_os], *hal_data->opmode);
     EC_WRITE_U32(&pd[hal_data->following_error_window_pdo_os], *hal_data->following_error_window);
@@ -714,5 +810,7 @@ void lcec_delta_asda_b3_write(struct lcec_slave *slave, long period) {
     EC_WRITE_S32(&pd[hal_data->target_velocity_pdo_os], *hal_data->target_velocity);
     EC_WRITE_U16(&pd[hal_data->max_torque_pdo_os], *hal_data->max_torque);
     EC_WRITE_S8(&pd[hal_data->homing_method_pdo_os], *hal_data->homing_method);
+    // EC_WRITE_U32(&pd[hal_data->digital_outputs_pdo_os], *hal_data->digital_outputs);
+    // EC_WRITE_U32(&pd[hal_data->digital_outputs_mask_pdo_os], *hal_data->digital_outputs_mask);
 }
 

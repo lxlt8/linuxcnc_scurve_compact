@@ -1,7 +1,0 @@
-/home/user/linuxcnc_distro_files/linuxcnc_scurve_compact/cmake/build-libhome-extern-Imported_Kit_c57c02-Debug/CMakeFiles/homemod_extern.dir
-/home/user/linuxcnc_distro_files/linuxcnc_scurve_compact/cmake/build-libhome-extern-Imported_Kit_c57c02-Debug/CMakeFiles/edit_cache.dir
-/home/user/linuxcnc_distro_files/linuxcnc_scurve_compact/cmake/build-libhome-extern-Imported_Kit_c57c02-Debug/CMakeFiles/rebuild_cache.dir
-/home/user/linuxcnc_distro_files/linuxcnc_scurve_compact/cmake/build-libhome-extern-Imported_Kit_c57c02-Debug/CMakeFiles/list_install_components.dir
-/home/user/linuxcnc_distro_files/linuxcnc_scurve_compact/cmake/build-libhome-extern-Imported_Kit_c57c02-Debug/CMakeFiles/install.dir
-/home/user/linuxcnc_distro_files/linuxcnc_scurve_compact/cmake/build-libhome-extern-Imported_Kit_c57c02-Debug/CMakeFiles/install/local.dir
-/home/user/linuxcnc_distro_files/linuxcnc_scurve_compact/cmake/build-libhome-extern-Imported_Kit_c57c02-Debug/CMakeFiles/install/strip.dir
